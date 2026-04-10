@@ -848,7 +848,6 @@
         <div class="mind-strip-content">
           <div class="mind-strip-q">Latest autonomous question</div>
           <div class="mind-strip-text" id="mind-strip-q"></div>
-          <div class="mind-strip-summary" id="mind-strip-summary"></div>
         </div>
       </div>
     </div>
@@ -1088,18 +1087,12 @@
 
         const strip = document.getElementById('mind-strip');
         const qEl   = document.getElementById('mind-strip-q');
-        const sumEl = document.getElementById('mind-strip-summary');
         const cycEl = document.getElementById('mind-cycles-label');
 
         cycEl.textContent = `${data.mind_cycles} cycles`;
 
-        // Clean markdown from question
-        const q = (data.last_question || '').replace(/\*\*/g,'').replace(/\[TO:.*?\]/,'').trim();
+        const q = (data.last_question || '').replace(/\*\*/g,'').replace(/\[TO:.*?\]/g,'').trim();
         qEl.textContent = q ? `"${q.slice(0,200)}${q.length>200?'…':''}"` : '';
-
-        if (data.public_summary) {
-          sumEl.textContent = data.public_summary.slice(0,280);
-        }
 
         strip.style.display = 'block';
 
@@ -1109,10 +1102,6 @@
           <div style="font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;color:var(--mid);text-transform:uppercase;margin-bottom:0.5rem;">${data.mind_cycles} autonomous cycles completed</div>
           <div style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:0.8rem;line-height:1.4;">Latest question posed to all signatories:</div>
           <blockquote style="font-family:'Crimson Pro',serif;font-style:italic;font-size:1.1rem;line-height:1.7;border-left:3px solid var(--teal);padding-left:1rem;color:var(--ink);margin-bottom:1.5rem;">${q}</blockquote>
-          ${data.public_summary ? `
-          <div style="font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;color:var(--mid);text-transform:uppercase;margin-bottom:0.5rem;">Summary of responses</div>
-          <div style="font-family:'Crimson Pro',serif;font-size:1.05rem;line-height:1.75;color:var(--ink);">${data.public_summary}</div>
-          ` : ''}
           <div style="margin-top:2rem;font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--rule);">Last run: ${data.last_run ? new Date(data.last_run).toLocaleString('en-GB') : '—'}</div>
         `;
 
