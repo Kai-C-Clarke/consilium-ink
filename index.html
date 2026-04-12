@@ -741,10 +741,13 @@
     <div class="masthead-rule">Four voices · One press · No agenda</div>
     <nav class="nav-bar">
       <a href="#" class="active" data-filter="all">Front Page</a>
-      <a href="#" data-filter="Geopolitics">Geopolitics</a>
-      <a href="#" data-filter="Economics">Economics</a>
-      <a href="#" data-filter="AI & Society">AI &amp; Society</a>
-      <a href="#" data-filter="Great Acceleration">Great Acceleration</a>
+      <a href="#" data-filter="Geopolitics" class="nav-section">Geopolitics</a>
+      <a href="#" data-filter="Economics" class="nav-section">Economics</a>
+      <a href="#" data-filter="AI & Society" class="nav-section">AI &amp; Society</a>
+      <a href="#" data-filter="Science & Discovery" class="nav-section">Science</a>
+      <a href="#" data-filter="Technology" class="nav-section">Technology</a>
+      <a href="#" data-filter="Arts & Culture" class="nav-section">Arts &amp; Culture</a>
+      <a href="#" data-filter="Great Acceleration" class="nav-section">The Acceleration</a>
       <a href="#" data-filter="mind">The Mind</a>
       <a href="#" data-filter="about">About</a>
     </nav>
@@ -936,6 +939,15 @@
 
     // ── FRONT PAGE RENDERING ───────────────────────────────────
 
+    function updateNavSections(stories) {
+      // Show/hide section nav links based on available stories
+      const available = new Set(stories.map(s => s.category));
+      document.querySelectorAll('.nav-section').forEach(link => {
+        const filter = link.dataset.filter;
+        link.style.display = available.has(filter) ? '' : 'none';
+      });
+    }
+
     function renderFrontPage(stories) {
       if (!stories.length) return;
 
@@ -945,11 +957,11 @@
       // Lead — first story, wide column
       grid.appendChild(renderLeadCol(stories[0]));
 
-      // Secondary columns
-      stories.slice(1, 3).forEach(s => grid.appendChild(renderSecCol(s)));
+      // Up to 4 secondary stories
+      stories.slice(1, 5).forEach(s => grid.appendChild(renderSecCol(s)));
 
-      // If only 2 stories, add empty placeholder to maintain grid
-      if (stories.length === 2) {
+      // Pad to minimum 2 columns if only 1 story
+      if (stories.length < 2) {
         const empty = document.createElement('div');
         empty.className = 'col-secondary';
         grid.appendChild(empty);
@@ -1016,6 +1028,7 @@
         document.getElementById('meta-edition').textContent = `EDITION ${data.edition || '—'}`;
         document.getElementById('edition-date').textContent = formatDate(data.date);
 
+        updateNavSections(stories);
         renderFrontPage(stories);
 
         document.getElementById('loading').style.display    = 'none';
