@@ -437,6 +437,55 @@
     .read-more.teal { color: var(--teal); border-color: var(--teal); }
     .read-more.teal:hover { color: var(--ink); border-color: var(--ink); }
 
+    /* ── THE THREAD ── */
+    #thread-strip {
+      margin: 0 2rem;
+      border: 1px solid var(--rule);
+      border-top: 3px solid var(--ink);
+      padding: 1rem 1.5rem;
+      display: none;
+      background: var(--pale);
+    }
+
+    .thread-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--mid);
+      margin-bottom: 0.4rem;
+    }
+
+    .thread-type {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--red);
+      float: right;
+      margin-top: 0.1rem;
+    }
+
+    .thread-text {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--ink);
+      font-style: italic;
+    }
+
+    /* ── METHODOLOGY NOTE ── */
+    .modal-methodology {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      color: var(--mid);
+      letter-spacing: 0.04em;
+      border-left: 2px solid var(--teal);
+      padding-left: 0.8rem;
+      margin-bottom: 1.2rem;
+      line-height: 1.6;
+    }
+
     /* ── ORNAMENT ── */
     .ornament {
       text-align: center;
@@ -800,6 +849,12 @@
         <span class="edition-note">Compiled by artificial intelligence — published without fear or favour</span>
       </div>
       <div class="broadsheet" id="broadsheet"></div>
+
+      <!-- THE THREAD -->
+      <div id="thread-strip">
+        <div class="thread-label">The Thread <span class="thread-type" id="thread-type"></span></div>
+        <div class="thread-text" id="thread-text"></div>
+      </div>
     </div>
 
     <!-- MIND PANEL -->
@@ -900,6 +955,7 @@
           <div class="modal-kicker${kClass}">${story.kicker || story.category}</div>
           <h2 class="modal-headline">${story.headline}</h2>
           <div class="modal-deck${kClass}">${story.deck}</div>
+          ${story.methodology ? `<div class="modal-methodology">Method: ${story.methodology}</div>` : ''}
           <div class="modal-article-body">${paras}</div>
           ${voicesHTML}
         </div>
@@ -946,6 +1002,16 @@
         const filter = link.dataset.filter;
         link.style.display = available.has(filter) ? '' : 'none';
       });
+    }
+
+    function renderThread(thread) {
+      if (!thread || !thread.connection_exists || !thread.thread) return;
+      const strip = document.getElementById('thread-strip');
+      const text  = document.getElementById('thread-text');
+      const type  = document.getElementById('thread-type');
+      text.textContent  = thread.thread;
+      type.textContent  = (thread.connection_type || '').replace(/-/g, ' · ');
+      strip.style.display = 'block';
     }
 
     function renderFrontPage(stories) {
@@ -1030,6 +1096,7 @@
 
         updateNavSections(stories);
         renderFrontPage(stories);
+        renderThread(data.thread);
 
         document.getElementById('loading').style.display    = 'none';
         document.getElementById('front-page').style.display = 'block';
