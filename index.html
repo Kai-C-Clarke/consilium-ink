@@ -958,11 +958,34 @@
           ${story.methodology ? `<div class="modal-methodology">Method: ${story.methodology}</div>` : ''}
           <div class="modal-article-body">${paras}</div>
           ${voicesHTML}
+          ${renderSources(story)}
         </div>
       `;
 
       modal.style.display = 'block';
       document.body.style.overflow = 'hidden';
+    }
+
+    function renderSources(story) {
+      const articles = story.source_articles || [];
+      const names    = story.sources || [];
+      if (!articles.length && !names.length) return '';
+
+      let items = '';
+      if (articles.length) {
+        items = articles.map(a => {
+          const title = a.title ? `<a href="${a.url}" target="_blank" rel="noopener">${a.title}</a>` : a.source;
+          return `<li><span class="modal-sources-name">${a.source}</span> — ${title}</li>`;
+        }).join('');
+      } else {
+        items = names.map(n => `<li><span class="modal-sources-name">${n}</span></li>`).join('');
+      }
+
+      return `
+        <div class="modal-sources">
+          <div class="modal-sources-title">Sources</div>
+          <ul class="modal-sources-list">${items}</ul>
+        </div>`;
     }
 
     function renderVoicesGrid(voices) {
