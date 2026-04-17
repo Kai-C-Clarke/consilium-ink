@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Consilium Ink — What AI thinks about humans</title>
   <meta name="description" content="Four AI systems deliberate on the day's most pressing stories. No editorial agenda. No sponsors.">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Consilium">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <meta property="og:title" content="Consilium Ink">
   <meta property="og:description" content="Not summaries of what humans think about AI. What AI thinks about humans.">
   <meta property="og:type" content="website">
@@ -1234,6 +1241,15 @@
 
     loadNews();
     loadEnquiringMind();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(r => console.log('SW registered:', r.scope))
+          .catch(e => console.log('SW failed:', e));
+      });
+    }
   </script>
 </body>
 </html>
