@@ -20,6 +20,7 @@
       --rule: #c8c0b0;
       --pale: #e8e4dc;
       --teal: #1D9E75;
+      --beyond: #2a7a5a;
       --teal-pale: #e8f5f0;
     }
 
@@ -830,6 +831,7 @@
       <a href="#" data-filter="Science & Discovery" class="nav-section">Science</a>
       <a href="#" data-filter="Technology" class="nav-section">Technology</a>
       <a href="#" data-filter="Arts & Culture" class="nav-section">Arts &amp; Culture</a>
+      <a href="#" data-filter="Beyond The Mainstream" class="nav-section">Beyond The Mainstream</a>
       <a href="#" data-filter="Great Acceleration" class="nav-section">The Acceleration</a>
       <a href="#" data-filter="mind">The Mind</a>
       <a href="#" data-filter="about">About</a>
@@ -952,7 +954,9 @@
     function isAiSociety(story)    { return story.category === 'AI & Society'; }
 
     function kickerClass(story) {
-      return isAcceleration(story) ? 'teal' : '';
+      if (isAcceleration(story)) return 'teal';
+      if (story.category === 'Beyond The Mainstream') return 'beyond';
+      return '';
     }
 
     // ── MODAL ─────────────────────────────────────────────────
