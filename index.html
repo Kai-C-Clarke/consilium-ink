@@ -528,6 +528,46 @@
     .modal-sources-list a:hover { text-decoration: underline; }
     .modal-sources-name { font-weight: bold; color: var(--ink); }
 
+    /* Share buttons */
+    .modal-share {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--rule);
+      align-items: center;
+    }
+    .share-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.5rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-right: 0.3rem;
+    }
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.8rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.52rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--rule);
+      color: var(--ink);
+      cursor: pointer;
+      background: transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .share-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .share-btn.whatsapp:hover { background: #25D366; border-color: #25D366; color: white; }
+    .share-btn.twitter:hover  { background: #000; border-color: #000; color: white; }
+    .share-btn.linkedin:hover { background: #0077B5; border-color: #0077B5; color: white; }
+    .share-btn.copy:hover     { background: var(--teal); border-color: var(--teal); color: white; }
+
     /* ── ORNAMENT ── */
     .ornament {
       text-align: center;
