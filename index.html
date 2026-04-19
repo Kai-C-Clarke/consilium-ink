@@ -111,26 +111,31 @@
       justify-content: center;
       gap: 0.5rem;
       flex-wrap: wrap;
-      padding: 0.6rem 0 0.2rem;
+      padding: 0.8rem 1rem 0.4rem;
     }
     .masthead-share-btn {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.3rem 0.7rem;
+      gap: 0.4rem;
+      padding: 0.6rem 1rem;
       font-family: 'Space Mono', monospace;
-      font-size: 0.48rem;
-      letter-spacing: 0.1em;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       text-decoration: none;
-      border: 1px solid rgba(255,255,255,0.3);
-      color: rgba(255,255,255,0.8);
+      border: 1px solid rgba(255,255,255,0.6);
+      color: white;
       cursor: pointer;
-      background: transparent;
+      background: rgba(255,255,255,0.1);
       transition: all 0.15s;
+      min-height: 36px;
     }
-    .masthead-share-btn:hover { background: rgba(255,255,255,0.15); color: white; border-color: white; }
-    .masthead-share-btn.wa:hover { background: #25D366; border-color: #25D366; color: white; }
+    .masthead-share-btn:hover, .masthead-share-btn:active {
+      background: rgba(255,255,255,0.25); color: white; border-color: white;
+    }
+    .masthead-share-btn.wa:hover, .masthead-share-btn.wa:active {
+      background: #25D366; border-color: #25D366; color: white;
+    }
 
     .masthead-rule {
       display: flex;
@@ -557,42 +562,52 @@
     /* Share buttons */
     .modal-share {
       display: flex;
-      gap: 0.6rem;
+      gap: 0.5rem;
       flex-wrap: wrap;
       margin-top: 2rem;
       padding-top: 1.2rem;
-      border-top: 1px solid var(--rule);
+      border-top: 2px solid var(--rule);
       align-items: center;
     }
     .share-label {
       font-family: 'Space Mono', monospace;
-      font-size: 0.5rem;
+      font-size: 0.55rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--mid);
       margin-right: 0.3rem;
+      width: 100%;
     }
     .share-btn {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.4rem 0.8rem;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1rem;
       font-family: 'Space Mono', monospace;
-      font-size: 0.52rem;
-      letter-spacing: 0.08em;
+      font-size: 0.58rem;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       text-decoration: none;
-      border: 1px solid var(--rule);
+      border: 1.5px solid var(--ink);
       color: var(--ink);
       cursor: pointer;
       background: transparent;
       transition: background 0.15s, color 0.15s, border-color 0.15s;
+      min-height: 40px;
+      min-width: 90px;
+      -webkit-tap-highlight-color: transparent;
     }
-    .share-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-    .share-btn.whatsapp:hover { background: #25D366; border-color: #25D366; color: white; }
-    .share-btn.twitter:hover  { background: #000; border-color: #000; color: white; }
-    .share-btn.linkedin:hover { background: #0077B5; border-color: #0077B5; color: white; }
-    .share-btn.copy:hover     { background: var(--teal); border-color: var(--teal); color: white; }
+    .share-btn:hover, .share-btn:active { background: var(--ink); color: var(--paper); }
+    .share-btn.whatsapp { border-color: #25D366; color: #25D366; }
+    .share-btn.whatsapp:hover, .share-btn.whatsapp:active { background: #25D366; color: white; }
+    .share-btn.twitter:hover, .share-btn.twitter:active  { background: #000; border-color: #000; color: white; }
+    .share-btn.linkedin:hover, .share-btn.linkedin:active { background: #0077B5; border-color: #0077B5; color: white; }
+    .share-btn.copy:hover, .share-btn.copy:active     { background: var(--teal); border-color: var(--teal); color: white; }
+    @media (max-width: 600px) {
+      .share-btn { flex: 1; min-width: 80px; font-size: 0.55rem; padding: 0.7rem 0.5rem; }
+      .modal-share { gap: 0.4rem; }
+    }
 
     /* ── ORNAMENT ── */
     .ornament {
