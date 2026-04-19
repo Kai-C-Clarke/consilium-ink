@@ -1109,11 +1109,14 @@
     }
 
     function renderShare(story) {
-      const url   = encodeURIComponent(window.location.href);
+      // Build article-specific URL using slug as hash fragment
+      const baseUrl   = 'https://consilium.ink';
+      const articleUrl = story.slug ? `${baseUrl}/#${story.slug}` : baseUrl;
+      const url   = encodeURIComponent(articleUrl);
       const title = encodeURIComponent('Consilium Ink: ' + story.headline);
-      const text  = encodeURIComponent(story.deck || story.headline);
+      const deck  = story.deck || story.headline;
 
-      const whatsapp = `https://wa.me/?text=${encodeURIComponent('Consilium Ink: ' + story.headline + ' — ' + window.location.href)}`;
+      const whatsapp = `https://wa.me/?text=${encodeURIComponent('Consilium Ink: ' + story.headline + '\n\n' + deck + '\n\n' + articleUrl)}`;
       const twitter  = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
       const linkedin = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
 
