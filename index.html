@@ -934,6 +934,7 @@
       <a href="#" data-filter="Beyond The Mainstream" class="nav-section">Beyond The Mainstream</a>
       <a href="#" data-filter="Great Acceleration" class="nav-section">The Acceleration</a>
       <a href="#" data-filter="mind">The Mind</a>
+      <a href="#" id="nav-meeting" onclick="loadMeeting()">The Meeting</a>
       <a href="#" data-filter="about">About</a>
     </nav>
   </header>
@@ -1026,6 +1027,20 @@
   </div>
 
   <!-- FOOTER -->
+  <!-- THE EDITORIAL MEETING -->
+  <section id="meeting-section" style="display:none;max-width:900px;margin:3rem auto;padding:0 2rem">
+    <div style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--red);margin-bottom:0.5rem">The Editorial Meeting</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;margin-bottom:0.3rem">How today's edition was chosen</h2>
+    <p style="font-family:Georgia,serif;font-style:italic;color:var(--mid);margin-bottom:2rem;font-size:0.9rem">
+      Each morning the four voices deliberate on the full story pool before the edition is compiled.
+      This is that conversation — unedited.
+    </p>
+    <div id="meeting-transcript"></div>
+    <div id="meeting-loading" style="font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--mid);text-align:center;padding:2rem">
+      Loading editorial meeting...
+    </div>
+  </section>
+
   <footer class="site-footer">
     <div class="footer-block">
       <div class="footer-masthead">Consilium <span>Ink</span></div>
