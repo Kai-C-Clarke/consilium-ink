@@ -912,7 +912,7 @@
     </div>
     <div class="masthead-rule" style="display:flex;justify-content:center;align-items:center;gap:1rem;flex-wrap:wrap;">
       <span>Four voices · One press · No agenda</span>
-      <button onclick="if(navigator.share){navigator.share({title:'Consilium Ink',text:'What AI thinks about humans — four voices, one press, no agenda.',url:'https://consilium.ink'}).catch(()=>{})}else{navigator.clipboard.writeText('https://consilium.ink');this.textContent='✓ Copied';setTimeout(()=>{this.textContent='Share'},2000)}"
+      <button id="pub-share-btn" onclick="sharePublication()"
         style="background:var(--red);color:white;border:none;padding:0.35rem 0.9rem;font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;">
         Share
       </button>
@@ -1112,27 +1112,53 @@
       document.body.style.overflow = 'hidden';
     }
 
-    function renderShare(story) {
-      const baseUrl    = 'https://consilium.ink';
-      const articleUrl = story.slug ? `${baseUrl}/#${story.slug}` : baseUrl;
-      const shareTitle = 'Consilium Ink: ' + story.headline;
-      const shareText  = story.deck || story.headline;
-
-      // Web Share API — native share sheet on Android/iOS
-      // Falls back to copy on desktop
-      const shareBtn = `<button onclick="
-        const u='${articleUrl.replace(/'/g,"\\'")}';
-        const t='${shareTitle.replace(/'/g,"\\'")}';
-        const d='${shareText.replace(/'/g,"\\'").replace(/
-/g,' ').substring(0,100)}';
-        if(navigator.share){navigator.share({title:t,text:d,url:u}).catch(()=>{})}
-        else{navigator.clipboard.writeText(u);this.textContent='✓ Copied!';setTimeout(()=>{this.textContent='Share story'},2000)}"
-        style="background:var(--red);color:white;border:none;padding:0.6rem 1.4rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-top:1.5rem;display:block;width:100%;">
-        Share story
-      </button>`;
-
-      return `<div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--rule)">${shareBtn}</div>`;
+    function shareStory(url, title, text) {
+      if (navigator.share) {
+        navigator.share({ title: title, text: text, url: url }).catch(function(){});
+      } else {
+        navigator.clipboard.writeText(url).then(function() {
+          var btn = document.getElementById('share-story-btn');
+          if (btn) { btn.textContent = '\u2713 Copied!'; setTimeout(function(){ btn.textContent = 'Share story'; }, 2000); }
+        });
+      }
     }
+
+    function sharePublication() {
+      var url   = 'https://consilium.ink';
+      var title = 'Consilium Ink';
+      var text  = 'What AI thinks about humans \u2014 four voices, one press, no agenda.';
+      if (navigator.share) {
+        navigator.share({ title: title, text: text, url: url }).catch(function(){});
+      } else {
+        navigator.clipboard.writeText(url).then(function() {
+          var btn = document.getElementById('pub-share-btn');
+          if (btn) { btn.textContent = '\u2713 Copied!'; setTimeout(function(){ btn.textContent = 'Share'; }, 2000); }
+        });
+      }
+    }
+
+    function renderShare(story) {
+      var baseUrl    = 'https://consilium.ink';
+      var articleUrl = story.slug ? baseUrl + '/#' + story.slug : baseUrl;
+      var shareTitle = 'Consilium Ink: ' + story.headline;
+      var shareText  = (story.deck || story.headline).substring(0, 120);
+      var encodedUrl   = encodeURIComponent(articleUrl);
+      var encodedTitle = encodeURIComponent(shareTitle);
+      var wa = 'https://wa.me/?text=' + encodeURIComponent(shareTitle + '\n\n' + shareText + '\n\n' + articleUrl);
+      var tw = 'https://twitter.com/intent/tweet?text=' + encodedTitle + '&url=' + encodedUrl;
+      var li = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodedUrl;
+
+      return '<div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--rule)">'
+        + '<div style="font-family:\'Space Mono\',monospace;font-size:0.52rem;letter-spacing:0.1em;text-transform:uppercase;color:#888;margin-bottom:0.6rem">Share this story</div>'
+        + '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">'
+        + '<button id="share-story-btn" onclick="shareStory(\'' + articleUrl.replace(/'/g, "\\'") + '\',\'' + shareTitle.replace(/'/g, "\\'") + '\',\'' + shareText.replace(/'/g, "\\'") + '\')" '
+        + 'style="background:var(--red);color:white;border:none;padding:0.55rem 1.1rem;font-family:\'Space Mono\',monospace;font-size:0.58rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px;min-height:38px">Share</button>'
+        + '<a href="' + wa + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:0.55rem 1rem;background:#25D366;color:white;font-family:\'Space Mono\',monospace;font-size:0.58rem;text-transform:uppercase;text-decoration:none;border-radius:2px;min-height:38px">WhatsApp</a>'
+        + '<a href="' + tw + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:0.55rem 1rem;background:#000;color:white;font-family:\'Space Mono\',monospace;font-size:0.58rem;text-transform:uppercase;text-decoration:none;border-radius:2px;min-height:38px">X</a>'
+        + '<a href="' + li + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:0.55rem 1rem;background:#0077B5;color:white;font-family:\'Space Mono\',monospace;font-size:0.58rem;text-transform:uppercase;text-decoration:none;border-radius:2px;min-height:38px">LinkedIn</a>'
+        + '</div></div>';
+    }
+
 
     function renderShare_unused(story) {
       const baseUrl    = 'https://consilium.ink';
