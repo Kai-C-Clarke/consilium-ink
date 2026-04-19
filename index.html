@@ -1290,42 +1290,44 @@
     }
 
     function renderSoloCol(story) {
-      // Full-width layout for single story — image right, text left
       const col  = document.createElement('div');
       col.className = 'col-solo';
       const teal = isAcceleration(story);
       const kc   = teal ? ' teal' : '';
-      const tease = (story.body || '').replace(/\n\n/g, ' ').slice(0, 400).trim();
-      const teaseEl = tease ? `<div class="lead-tease">${tease}${tease.length >= 400 ? '\u2026' : ''}</div>` : '';
-      const imgHTML = story.image_url
-        ? `<img src="${story.image_url}" alt="${story.headline}" style="width:100%;max-height:320px;object-fit:cover;display:block;margin-bottom:0">`
-        : '';
+      const tease = (story.body || '').replace(/\n\n/g, ' ').slice(0, 350).trim();
+      const teaseEl = tease ? `<div class="lead-tease">${tease}${tease.length >= 350 ? '\u2026' : ''}</div>` : '';
 
       if (story.image_url) {
+        // Two-column: text left, image right
         col.innerHTML = `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start">
-            <div style="padding:1.8rem 2rem 1.8rem 0;border-right:1px solid var(--rule)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:stretch;border-bottom:1px solid var(--rule)">
+            <div style="padding:2rem 2rem 2rem 0;border-right:1px solid var(--rule)">
               <div class="story-kicker${kc}">${story.kicker || story.category}</div>
               <h2 class="lead-headline">${story.headline}</h2>
               <div class="lead-deck${kc}">${story.deck}</div>
               ${teaseEl}
-              <div class="read-more" onclick="openArticle(stories_cache[${stories_cache ? stories_cache.indexOf(story) : 0}])">Continue reading →</div>
+              <div class="read-more" style="cursor:pointer">Continue reading →</div>
             </div>
-            <div style="overflow:hidden">${imgHTML}</div>
+            <div style="overflow:hidden;min-height:280px">
+              <img src="${story.image_url}" alt="${story.headline}"
+                style="width:100%;height:100%;object-fit:cover;display:block">
+            </div>
           </div>`;
       } else {
+        // No image — full width, left-aligned, generous width
         col.innerHTML = `
-          <div style="max-width:680px;margin:0 auto;padding:1.8rem 0;text-align:center">
+          <div style="max-width:780px;padding:2rem 0;border-bottom:1px solid var(--rule)">
             <div class="story-kicker${kc}">${story.kicker || story.category}</div>
-            <h2 class="lead-headline" style="font-size:clamp(2rem,5vw,3.2rem)">${story.headline}</h2>
-            <div class="lead-deck${kc}" style="max-width:540px;margin:0 auto 1rem">${story.deck}</div>
+            <h2 class="lead-headline" style="font-size:clamp(2rem,4vw,3rem)">${story.headline}</h2>
+            <div class="lead-deck${kc}">${story.deck}</div>
             ${teaseEl}
-            <div class="read-more" style="text-align:center">Continue reading →</div>
+            <div class="read-more" style="cursor:pointer">Continue reading →</div>
           </div>`;
       }
       col.querySelector('.read-more').addEventListener('click', () => openArticle(story));
       return col;
     }
+
 
     function renderLeadCol(story) {
       const col  = document.createElement('div');
