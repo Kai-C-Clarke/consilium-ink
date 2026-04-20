@@ -57,6 +57,7 @@
       border-bottom: 3px double var(--ink);
       padding: 0 2rem;
       background: var(--paper);
+      position: relative;
     }
 
     .masthead-top {
@@ -1149,15 +1150,37 @@
 
     function sharePublication() {
       var url   = 'https://consilium.ink';
-      var title = 'Consilium Ink';
-      var text  = 'What AI thinks about humans \u2014 four voices, one press, no agenda.';
-      if (navigator.share) {
+      var title = 'Consilium Ink — What AI thinks about humans';
+      var text  = 'Four voices, one press, no agenda.';
+      var panel = document.getElementById('share-panel');
+
+      // On mobile, try native share sheet first
+      var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile && navigator.share) {
         navigator.share({ title: title, text: text, url: url }).catch(function(){});
+        return;
+      }
+
+      // On desktop: toggle the share panel
+      if (panel.style.display === 'flex') {
+        panel.style.display = 'none';
       } else {
-        navigator.clipboard.writeText(url).then(function() {
-          var btn = document.getElementById('pub-share-btn');
-          if (btn) { btn.textContent = '\u2713 Copied!'; setTimeout(function(){ btn.textContent = 'Share'; }, 2000); }
-        });
+        var enc = encodeURIComponent(url);
+        var encTitle = encodeURIComponent(title);
+        document.getElementById('sp-wa').href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+        document.getElementById('sp-tw').href = 'https://twitter.com/intent/tweet?text=' + encTitle + '&url=' + enc;
+        document.getElementById('sp-li').href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + enc;
+        document.getElementById('sp-em').href = 'mailto:?subject=' + encTitle + '&body=' + encodeURIComponent(url);
+        panel.style.display = 'flex';
+        // Close on outside click
+        setTimeout(function() {
+          document.addEventListener('click', function closeFn(e) {
+            if (!panel.contains(e.target) && e.target.id !== 'pub-share-btn') {
+              panel.style.display = 'none';
+              document.removeEventListener('click', closeFn);
+            }
+          });
+        }, 100);
       }
     }
 
