@@ -547,9 +547,10 @@ function drawBlooms() {
   blooms.forEach(b => {
     const p = project(b.theta, b.phi);
     if (!p.visible) return;
-    const r = 14 * p.scale;
+    const r = 28 * p.scale;
     const grd = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, r);
-    grd.addColorStop(0, 'rgba(74,158,107,0.35)');
+    grd.addColorStop(0, 'rgba(74,158,107,0.45)');
+    grd.addColorStop(0.4, 'rgba(74,158,107,0.2)');
     grd.addColorStop(1, 'rgba(74,158,107,0)');
     ctx.beginPath();
     ctx.arc(p.sx, p.sy, r, 0, Math.PI*2);
@@ -557,7 +558,7 @@ function drawBlooms() {
     ctx.fill();
     // Centre dot
     ctx.beginPath();
-    ctx.arc(p.sx, p.sy, 3*p.scale, 0, Math.PI*2);
+    ctx.arc(p.sx, p.sy, 5*p.scale, 0, Math.PI*2);
     ctx.fillStyle = '#4a9e6b';
     ctx.fill();
   });
@@ -601,8 +602,8 @@ function drawGrazers() {
     const p = project(g.theta, g.phi);
     if (!p.visible) return;
     ctx.beginPath();
-    ctx.arc(p.sx, p.sy, 2.5 * p.scale, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(160,140,110,${0.25 * p.scale})`;
+    ctx.arc(p.sx, p.sy, 3.5 * p.scale, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(140,115,80,${0.45 * p.scale})`;
     ctx.fill();
   });
 }
