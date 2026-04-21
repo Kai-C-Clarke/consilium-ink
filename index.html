@@ -951,7 +951,7 @@
       <a href="#" data-filter="Great Acceleration" class="nav-section">The Acceleration</a>
       <a href="#" data-filter="mind">The Mind</a>
       <a href="#" id="nav-meeting" onclick="loadMeeting()">The Meeting</a>
-      <a href="/field" target="_blank" style="color:var(--pred-orange, #e05a2b)">The Field ↗</a>
+      <a href="/field" style="color:var(--pred-orange, #e05a2b)">The Field ↗</a>
       <a href="#" data-filter="about">About</a>
       <button id="pub-share-btn" onclick="sharePublication()"
         style="background:var(--red);color:white;border:none;padding:0.4rem 1rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-left:auto;min-height:36px;white-space:nowrap;">
@@ -1505,6 +1505,9 @@
 
     document.querySelectorAll('.nav-bar a').forEach(link => {
       link.addEventListener('click', e => {
+        // Allow real href links (The Field, external) to navigate normally
+        const href = link.getAttribute('href');
+        if (href && href !== '#') return;
         e.preventDefault();
         document.querySelectorAll('.nav-bar a').forEach(l => l.classList.remove('active'));
         link.classList.add('active');
