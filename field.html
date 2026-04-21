@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Field — An Experiment in Emergent Communication</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:    #0f0f0f;
+    --paper:  #f5f0e8;
+    --dim:    #6b6560;
+    --rule:   #d4cdc4;
+    --red:    #c0392b;
+    --pred-a: #e05a2b;   /* A — warm orange */
+    --pred-b: #2b7ec0;   /* B — deep blue   */
+    --bloom:  #4a9e6b;   /* bloom — green   */
+    --signal: #8b4bbf;   /* signal — purple */
+    --grazer: rgba(180,160,130,0.35);
+  }
+
+  html { background: var(--paper); color: var(--ink); font-family: 'EB Garamond', Georgia, serif; }
+
+  body { min-height: 100vh; overflow-x: hidden; }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 2rem 2.5rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 1rem;
+  }
+  .site-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  h1 em { font-style: italic; color: var(--dim); }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4a9e6b;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .live-dot.stale  { background: var(--dim); animation: none; }
+  .live-dot.error  { background: var(--red); animation: none; }
+  @keyframes pulse-dot {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(0.7); }
+  }
+
+  /* ── OPENING TEXT ── */
+  .opening {
+    max-width: 680px;
+    margin: 3rem 2.5rem;
+    border-left: 3px solid var(--ink);
+    padding-left: 1.5rem;
+  }
+  .opening p {
+    font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+    line-height: 1.65;
+    margin-bottom: 1rem;
+  }
+  .opening p:last-child { margin-bottom: 0; }
+  .opening p + p { color: var(--dim); font-style: italic; }
+
+  /* ── MAIN LAYOUT ── */
+  .field-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+  }
+  @media (max-width: 900px) {
+    .field-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ── SPHERE PANEL ── */
+  .sphere-panel {
+    border-right: 1px solid var(--rule);
+    padding: 2rem;
+    position: relative;
+  }
+  .sphere-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 1rem;
+  }
+  canvas#field-canvas {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    cursor: grab;
+  }
+  canvas#field-canvas:active { cursor: grabbing; }
+
+  /* Trail legend */
+  .trail-legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; color: var(--dim); }
+  .legend-swatch { width: 20px; height: 3px; border-radius: 2px; }
+
+  /* ── STATS PANEL ── */
+  .stats-panel { padding: 2rem 1.5rem; }
+  .stats-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5rem;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--rule);
+    gap: 0.5rem;
+  }
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .stat-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: right;
+  }
+  .stat-value.highlight { color: var(--signal); }
+
+  .pred-row {
+    margin: 1rem 0 0.5rem;
+    padding: 0.8rem;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+  }
+  .pred-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .pred-a .pred-label { color: var(--pred-a); }
+  .pred-b .pred-label { color: var(--pred-b); }
+  .pred-bar-wrap { background: var(--rule); height: 4px; border-radius: 2px; margin: 0.3rem 0; }
+  .pred-bar { height: 4px; border-radius: 2px; transition: width 0.5s ease; }
+  .pred-a .pred-bar { background: var(--pred-a); }
+  .pred-b .pred-bar { background: var(--pred-b); }
+  .pred-obs {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.45rem;
+    color: var(--dim);
+    margin-top: 0.2rem;
+  }
+
+  /* Signal log */
+  .signal-log {
+    margin-top: 1.5rem;
+  }
+  .signal-log-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+  }
+  .signal-entry {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--rule);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.42rem;
+    color: var(--dim);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+    opacity: 0;
+    animation: fadein 0.4s ease forwards;
+  }
+  .signal-entry .cycle-num { color: var(--ink); }
+  .signal-entry .sig-arrow { color: var(--signal); }
+  .signal-entry .sig-strength { color: var(--signal); text-align: right; }
+  @keyframes fadein { to { opacity: 1; } }
+
+  /* ── EXPLANATION ── */
+  .explanation {
+    border-top: 2px solid var(--ink);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  @media (max-width: 700px) { .explanation { grid-template-columns: 1fr; } }
+  .exp-section {
+    padding: 2.5rem 2rem;
+    border-right: 1px solid var(--rule);
+  }
+  .exp-section:last-child { border-right: none; }
+  .exp-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+    margin-bottom: 0.8rem;
+  }
+  .exp-heading {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 0.8rem;
+    line-height: 1.25;
+  }
+  .exp-body {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: #2a2520;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 1.5rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  footer p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.45rem;
+    letter-spacing: 0.08em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  footer a { color: var(--dim); text-decoration: underline; }
+
+  /* ── SIGNAL BURST OVERLAY ── */
+  #burst-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="site-label">the-ancestor.onrender.com — live experiment</div>
+    <h1>The Field<br><em>An experiment in emergent communication</em></h1>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot" id="live-dot"></div>
+    <span id="live-label">Connecting…</span>
+  </div>
+</header>
+
+<div class="opening">
+  <p>This is an experiment in emergence. Two artificial hunters share a world with moving prey. We are watching to see if, under pressure to survive, they develop a way of telling each other where the food is going.</p>
+  <p>If they do, we may be watching the birth of language — not designed, not prompted, not human. Something that arrived because it had to.</p>
+</div>
+
+<div class="field-layout">
+
+  <!-- Sphere -->
+  <div class="sphere-panel">
+    <div class="sphere-title">Live field — sphere S² — polling every 2s</div>
+    <div style="position:relative">
+      <canvas id="field-canvas" width="580" height="580"></canvas>
+      <div id="burst-layer"></div>
+    </div>
+    <div class="trail-legend">
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--pred-a)"></div>
+        Hunter A — navigator
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--pred-b)"></div>
+        Hunter B — follower
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--bloom)"></div>
+        Food bloom
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:var(--signal);height:2px;border-radius:0"></div>
+        Signal event
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-panel">
+    <div class="stats-title">Live state</div>
+
+    <div class="stat-row">
+      <span class="stat-label">Cycle</span>
+      <span class="stat-value" id="stat-cycle">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Generation</span>
+      <span class="stat-value" id="stat-gen">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Grazers alive</span>
+      <span class="stat-value" id="stat-grazers">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Total kills</span>
+      <span class="stat-value" id="stat-kills">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Signal events</span>
+      <span class="stat-value highlight" id="stat-signals">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Traj. hits</span>
+      <span class="stat-value highlight" id="stat-traj">—</span>
+    </div>
+
+    <div class="pred-row pred-a">
+      <div class="pred-label">Hunter A — navigator</div>
+      <div class="pred-bar-wrap"><div class="pred-bar" id="bar-a" style="width:0%"></div></div>
+      <div class="pred-obs" id="obs-a">Confidence —</div>
+    </div>
+
+    <div class="pred-row pred-b">
+      <div class="pred-label">Hunter B — follower</div>
+      <div class="pred-bar-wrap"><div class="pred-bar" id="bar-b" style="width:0%"></div></div>
+      <div class="pred-obs" id="obs-b">Observation weight —</div>
+    </div>
+
+    <div class="signal-log">
+      <div class="signal-log-title">
+        <span>Recent signals</span>
+        <span id="signal-count" style="color:var(--signal)">0 total</span>
+      </div>
+      <div id="signal-entries"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Explanation -->
+<div class="explanation">
+  <div class="exp-section">
+    <div class="exp-num">01 — The Setup</div>
+    <div class="exp-heading">A shared world with moving food</div>
+    <div class="exp-body">
+      The sphere holds two hunters and thousands of grazers. The grazers follow drifting blooms of food — moving targets, never still. Neither hunter can catch enough to survive alone. Cooperation isn't a rule. It's a pressure.
+    </div>
+  </div>
+  <div class="exp-section">
+    <div class="exp-num">02 — The Signal</div>
+    <div class="exp-heading">B watches how A moves</div>
+    <div class="exp-body">
+      Hunter B cannot see the blooms directly. It watches Hunter A. When A accelerates — moving faster than usual toward a region — B infers that A has found something. B moves toward where A is heading. No message is sent. No word is spoken. The information travels through behaviour alone.
+    </div>
+  </div>
+  <div class="exp-section">
+    <div class="exp-num">03 — The Question</div>
+    <div class="exp-heading">Will the signal grow stronger?</div>
+    <div class="exp-body">
+      Right now B detects A's acceleration but barely acts on it. The question is whether, under selection pressure, B's sensitivity to A's movement evolves upward — until following A reliably becomes the difference between eating and starving. If it does, something like language will have arrived without being designed.
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Running on Render · Field v2 · Data from the-ancestor.onrender.com</p>
+  <p>An experiment by Jon Stiles &amp; Claude · <a href="https://consilium.ink">Consilium Ink</a></p>
+</footer>
+
+<script>
+const API = 'https://the-ancestor.onrender.com';
+
+// ── Canvas setup ──────────────────────────────────────────────
+const canvas = document.getElementById('field-canvas');
+const ctx    = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height, CX = W/2, CY = H/2, R = W * 0.40;
+
+// Rotation state
+let rotY = 0.3, rotX = -0.15;
+let dragging = false, lastMX = 0, lastMY = 0;
+canvas.addEventListener('mousedown', e => { dragging=true; lastMX=e.clientX; lastMY=e.clientY; });
+window.addEventListener('mouseup', () => dragging=false);
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  rotY += (e.clientX - lastMX) * 0.005;
+  rotX += (e.clientY - lastMY) * 0.005;
+  lastMX=e.clientX; lastMY=e.clientY;
+  draw();
+});
+// Touch
+canvas.addEventListener('touchstart', e => { dragging=true; lastMX=e.touches[0].clientX; lastMY=e.touches[0].clientY; e.preventDefault(); }, {passive:false});
+window.addEventListener('touchend', () => dragging=false);
+window.addEventListener('touchmove', e => {
+  if (!dragging) return;
+  rotY += (e.touches[0].clientX - lastMX) * 0.006;
+  rotX += (e.touches[0].clientY - lastMY) * 0.006;
+  lastMX=e.touches[0].clientX; lastMY=e.touches[0].clientY;
+  draw();
+}, {passive:false});
+
+// Sphere projection
+function project(theta, phi) {
+  const th = theta * Math.PI/180;
+  const ph = phi   * Math.PI/180;
+  let x = Math.sin(ph) * Math.cos(th);
+  let y = Math.cos(ph);
+  let z = Math.sin(ph) * Math.sin(th);
+  // Rotate around Y axis
+  const x1 = x*Math.cos(rotY) + z*Math.sin(rotY);
+  const z1 = -x*Math.sin(rotY) + z*Math.cos(rotY);
+  // Rotate around X axis
+  const y1 = y*Math.cos(rotX) - z1*Math.sin(rotX);
+  const z2 = y*Math.sin(rotX) + z1*Math.cos(rotX);
+  const scale = 0.6 + 0.4*(z2+1)/2;  // simple perspective
+  return { sx: CX + x1*R, sy: CY + y1*R, z: z2, scale, visible: z2 > -0.3 };
+}
+
+// State
+let state = { cycle:0, grazers:0, browsers:0, generation:0, kills:0, signals:0, traj_hits:0 };
+let predA = { positions:[], conf:0, obs:0 };
+let predB = { positions:[], conf:0, obs:0 };
+let blooms = [];
+let recentSignals = [];
+let lastCycle = -1;
+
+// Trail history
+const TRAIL_LEN = 50;
+const trailA = [], trailB = [];
+
+function addTrail(arr, theta, phi) {
+  arr.push({ theta, phi });
+  if (arr.length > TRAIL_LEN) arr.shift();
+}
+
+// ── Draw ──────────────────────────────────────────────────────
+function drawSphere() {
+  // Background circle
+  ctx.beginPath();
+  ctx.arc(CX, CY, R, 0, Math.PI*2);
+  ctx.fillStyle = '#f0ece3';
+  ctx.fill();
+  // Subtle grid lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = 0.5;
+  for (let lat = -75; lat <= 75; lat += 30) {
+    ctx.beginPath();
+    for (let lon = 0; lon <= 360; lon += 3) {
+      const p = project(lon, lat+90);
+      if (p.visible) {
+        if (lon === 0) ctx.moveTo(p.sx, p.sy);
+        else ctx.lineTo(p.sx, p.sy);
+      }
+    }
+    ctx.stroke();
+  }
+  for (let lon = 0; lon < 360; lon += 45) {
+    ctx.beginPath();
+    for (let lat = -90; lat <= 90; lat += 3) {
+      const p = project(lon, lat+90);
+      if (p.visible) {
+        if (lat === -90) ctx.moveTo(p.sx, p.sy);
+        else ctx.lineTo(p.sx, p.sy);
+      }
+    }
+    ctx.stroke();
+  }
+  // Sphere border
+  ctx.beginPath();
+  ctx.arc(CX, CY, R, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+function drawTrail(trail, color) {
+  if (trail.length < 2) return;
+  for (let i = 1; i < trail.length; i++) {
+    const p0 = project(trail[i-1].theta, trail[i-1].phi);
+    const p1 = project(trail[i].theta, trail[i].phi);
+    if (!p0.visible && !p1.visible) continue;
+    const alpha = (i / trail.length) * 0.7;
+    ctx.beginPath();
+    ctx.moveTo(p0.sx, p0.sy);
+    ctx.lineTo(p1.sx, p1.sy);
+    ctx.strokeStyle = color.replace(')', `,${alpha})`).replace('rgb','rgba');
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+}
+
+function drawBlooms() {
+  blooms.forEach(b => {
+    const p = project(b.theta, b.phi);
+    if (!p.visible) return;
+    const r = 14 * p.scale;
+    const grd = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, r);
+    grd.addColorStop(0, 'rgba(74,158,107,0.35)');
+    grd.addColorStop(1, 'rgba(74,158,107,0)');
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, r, 0, Math.PI*2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+    // Centre dot
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, 3*p.scale, 0, Math.PI*2);
+    ctx.fillStyle = '#4a9e6b';
+    ctx.fill();
+  });
+}
+
+function drawPred(positions, color, label, conf) {
+  if (!positions || !positions.length) return;
+  const last = positions[positions.length-1];
+  const p = project(last.theta, last.phi);
+  if (!p.visible) return;
+  const r = 8 * p.scale;
+  // Glow
+  const grd = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, r*2.5);
+  grd.addColorStop(0, color.replace(')', ',0.4)').replace('rgb','rgba'));
+  grd.addColorStop(1, color.replace(')', ',0)').replace('rgb','rgba'));
+  ctx.beginPath();
+  ctx.arc(p.sx, p.sy, r*2.5, 0, Math.PI*2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+  // Dot
+  ctx.beginPath();
+  ctx.arc(p.sx, p.sy, r, 0, Math.PI*2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  // Confidence ring
+  if (conf > 0.1) {
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, r + 4*p.scale, 0, Math.PI*2*conf);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+  // Label
+  ctx.fillStyle = color;
+  ctx.font = `${Math.round(10*p.scale)}px 'Space Mono', monospace`;
+  ctx.fillText(label, p.sx + r + 4, p.sy + 4);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  drawSphere();
+  drawBlooms();
+  drawTrail(trailA, 'rgb(224,90,43)');
+  drawTrail(trailB, 'rgb(43,126,192)');
+  drawPred(predA.positions, '#e05a2b', 'A', predA.conf);
+  drawPred(predB.positions, '#2b7ec0', 'B', predB.obs);
+}
+
+// ── Signal burst effect ──────────────────────────────────────
+function triggerBurst(theta, phi) {
+  const p = project(theta, phi);
+  if (!p.visible) return;
+  const rect = canvas.getBoundingClientRect();
+  const layer = document.getElementById('burst-layer');
+  const ring = document.createElement('div');
+  const canvasDisplayW = canvas.offsetWidth;
+  const scale = canvasDisplayW / W;
+  ring.style.cssText = `
+    position:absolute;
+    left:${p.sx*scale - 20}px;
+    top:${p.sy*scale - 20}px;
+    width:40px; height:40px;
+    border-radius:50%;
+    border:2px solid var(--signal);
+    opacity:0.8;
+    animation:burst 1.2s ease-out forwards;
+    pointer-events:none;
+  `;
+  if (!document.querySelector('#burst-style')) {
+    const s = document.createElement('style');
+    s.id = 'burst-style';
+    s.textContent = `@keyframes burst {
+      0%   { transform:scale(0.5); opacity:0.8; }
+      100% { transform:scale(3.5); opacity:0; }
+    }`;
+    document.head.appendChild(s);
+  }
+  layer.appendChild(ring);
+  setTimeout(() => ring.remove(), 1200);
+}
+
+// ── Data fetch ────────────────────────────────────────────────
+const dot   = document.getElementById('live-dot');
+const label = document.getElementById('live-label');
+
+async function fetchHealth() {
+  try {
+    const r = await fetch(`${API}/field/health`);
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    state = d;
+
+    const isNew = d.cycle !== lastCycle;
+    dot.className   = 'live-dot' + (isNew ? '' : ' stale');
+    label.textContent = isNew ? `Cycle ${d.cycle.toLocaleString()}` : `Cycle ${d.cycle.toLocaleString()} — no update`;
+
+    document.getElementById('stat-cycle').textContent   = d.cycle.toLocaleString();
+    document.getElementById('stat-gen').textContent     = d.generation;
+    document.getElementById('stat-grazers').textContent = d.grazers.toLocaleString();
+    document.getElementById('stat-kills').textContent   = d.kills;
+    document.getElementById('stat-signals').textContent = d.signals;
+    document.getElementById('stat-traj').textContent    = d.traj_hits;
+
+    lastCycle = d.cycle;
+  } catch(e) {
+    dot.className = 'live-dot error';
+    label.textContent = 'Service unreachable';
+  }
+}
+
+async function fetchTrajectory() {
+  try {
+    const r = await fetch(`${API}/field/trajectory`);
+    if (!r.ok) return;
+    const d = await r.json();
+
+    const pa = d.predators?.predator_a;
+    const pb = d.predators?.predator_b;
+
+    if (pa?.last_5_positions?.length) {
+      predA.positions = pa.last_5_positions;
+      predA.conf = pa.prediction_conf || 0;
+      const last = pa.last_5_positions[pa.last_5_positions.length-1];
+      addTrail(trailA, last.theta, last.phi);
+    }
+    if (pb?.last_5_positions?.length) {
+      predB.positions = pb.last_5_positions;
+      predB.obs = pb.partner_obs_weight || 0;
+      const last = pb.last_5_positions[pb.last_5_positions.length-1];
+      addTrail(trailB, last.theta, last.phi);
+    }
+
+    // Update bars
+    document.getElementById('bar-a').style.width = (predA.conf*100) + '%';
+    document.getElementById('bar-b').style.width = (predB.obs*100)  + '%';
+    document.getElementById('obs-a').textContent = `Bloom confidence: ${(predA.conf*100).toFixed(0)}%`;
+    document.getElementById('obs-b').textContent = `Observation weight: ${(predB.obs*100).toFixed(0)}%`;
+
+    draw();
+  } catch(e) { /* silent */ }
+}
+
+async function fetchSignals() {
+  try {
+    const r = await fetch(`${API}/field/signals?limit=20`);
+    if (!r.ok) return;
+    const d = await r.json();
+    const sigs = d.recent || [];
+
+    document.getElementById('signal-count').textContent = `${d.total || 0} total`;
+
+    // Check for new signals and trigger bursts
+    const newSigs = sigs.filter(s => !recentSignals.find(rs => rs.cycle === s.cycle));
+    newSigs.forEach(s => {
+      // Burst near last known A position
+      if (trailA.length) {
+        const last = trailA[trailA.length-1];
+        triggerBurst(last.theta, last.phi);
+      }
+    });
+
+    recentSignals = sigs;
+
+    const container = document.getElementById('signal-entries');
+    const lastFive = sigs.slice(-5).reverse();
+    container.innerHTML = lastFive.map(s => `
+      <div class="signal-entry">
+        <span class="cycle-num">${s.cycle}</span>
+        <span class="sig-arrow">A → B</span>
+        <span class="sig-strength">${s.strength?.toFixed(3) || '—'}</span>
+      </div>
+    `).join('');
+
+  } catch(e) { /* silent */ }
+}
+
+// Fetch blooms from state
+async function fetchBlooms() {
+  try {
+    const r = await fetch(`${API}/field/state`);
+    if (!r.ok) return;
+    const d = await r.json();
+    const raw = d.blooms || [];
+    blooms = raw.map(b => {
+      // blooms store pos as [x,y,z] — convert to theta/phi
+      const pos = b.pos || [];
+      if (pos.length < 3) return null;
+      const [x,y,z] = pos;
+      const phi   = Math.acos(Math.max(-1, Math.min(1, y))) * 180/Math.PI;
+      const theta = (Math.atan2(z, x) * 180/Math.PI + 360) % 360;
+      return { theta, phi };
+    }).filter(Boolean);
+  } catch(e) { /* silent */ }
+}
+
+// ── Poll loop ─────────────────────────────────────────────────
+async function poll() {
+  await Promise.all([fetchHealth(), fetchTrajectory(), fetchSignals()]);
+}
+async function slowPoll() {
+  await fetchBlooms();
+}
+
+draw();
+poll();
+slowPoll();
+setInterval(poll, 2000);
+setInterval(slowPoll, 10000);
+setInterval(() => { if (!dragging) { rotY += 0.002; draw(); } }, 50);
+</script>
+
+</body>
+</html>
