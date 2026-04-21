@@ -682,14 +682,31 @@ async function fetchTrajectory() {
       const last = pa.last_5_positions[pa.last_5_positions.length-1];
       addTrail(trailA, last.theta, last.phi);
     }
-    if (pb?.last_5_positions?.length) {
-      predB.positions = pb.last_5_positions;
+
+    // B is bloom-blind — no trajectory history, get current pos from state
+    if (pb) {
       predB.obs = pb.partner_obs_weight || 0;
-      const last = pb.last_5_positions[pb.last_5_positions.length-1];
-      addTrail(trailB, last.theta, last.phi);
+      // If B has no position history, fetch from /field/state predators
+      if (!pb.last_5_positions?.length) {
+        try {
+          const rs = await fetch(`${API}/field/state`);
+          if (rs.ok) {
+            const ds = await rs.json();
+            const bState = ds.predators?.predator_b;
+            if (bState) {
+              const bPos = [{ theta: bState.theta, phi: bState.phi, cycle: d.cycle || 0 }];
+              predB.positions = bPos;
+              addTrail(trailB, bState.theta, bState.phi);
+            }
+          }
+        } catch(e2) { /* silent */ }
+      } else {
+        predB.positions = pb.last_5_positions;
+        const last = pb.last_5_positions[pb.last_5_positions.length-1];
+        addTrail(trailB, last.theta, last.phi);
+      }
     }
 
-    // Update bars
     document.getElementById('bar-a').style.width = (predA.conf*100) + '%';
     document.getElementById('bar-b').style.width = (predB.obs*100)  + '%';
     document.getElementById('obs-a').textContent = `Bloom confidence: ${(predA.conf*100).toFixed(0)}%`;
@@ -698,6 +715,7 @@ async function fetchTrajectory() {
     draw();
   } catch(e) { /* silent */ }
 }
+
 
 async function fetchSignals() {
   try {
