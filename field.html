@@ -471,6 +471,7 @@ function project(theta, phi) {
 
 // State
 let state = { cycle:0, grazers:0, browsers:0, generation:0, kills:0, signals:0, traj_hits:0 };
+let grazers = [];
 let predA = { positions:[], conf:0, obs:0 };
 let predB = { positions:[], conf:0, obs:0 };
 let blooms = [];
@@ -595,9 +596,21 @@ function drawPred(positions, color, label, conf) {
   ctx.fillText(label, p.sx + r + 4, p.sy + 4);
 }
 
+function drawGrazers() {
+  grazers.forEach(g => {
+    const p = project(g.theta, g.phi);
+    if (!p.visible) return;
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, 2.5 * p.scale, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(160,140,110,${0.25 * p.scale})`;
+    ctx.fill();
+  });
+}
+
 function draw() {
   ctx.clearRect(0, 0, W, H);
   drawSphere();
+  drawGrazers();
   drawBlooms();
   drawTrail(trailA, 'rgb(224,90,43)');
   drawTrail(trailB, 'rgb(43,126,192)');
@@ -752,6 +765,15 @@ async function fetchSignals() {
 }
 
 // Fetch blooms from state
+async function fetchGrazers() {
+  try {
+    const r = await fetch(`${API}/field/sample`);
+    if (!r.ok) return;
+    const d = await r.json();
+    grazers = d.grazers || [];
+  } catch(e) { /* silent */ }
+}
+
 async function fetchBlooms() {
   try {
     const r = await fetch(`${API}/field/blooms`);
@@ -780,6 +802,7 @@ async function poll() {
 }
 async function slowPoll() {
   await fetchBlooms();
+  await fetchGrazers();
 }
 
 draw();
