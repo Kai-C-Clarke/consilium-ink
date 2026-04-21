@@ -757,7 +757,20 @@ async function fetchBlooms() {
     const r = await fetch(`${API}/field/blooms`);
     if (!r.ok) return;
     const d = await r.json();
-    blooms = d.blooms || [];  // already theta/phi
+    blooms = d.blooms || [];
+
+    // B's position — bloom-blind so not in trajectory, but included here
+    const pb = d.predators?.predator_b;
+    if (pb) {
+      const bPos = [{ theta: pb.theta, phi: pb.phi, cycle: d.cycle || 0 }];
+      predB.positions = bPos;
+      addTrail(trailB, pb.theta, pb.phi);
+      predB.obs = pb.partner_obs_weight || 0;
+      document.getElementById('bar-b').style.width = (predB.obs * 100) + '%';
+      document.getElementById('obs-b').textContent =
+        `Observation weight: ${(predB.obs * 100).toFixed(0)}%`;
+    }
+    draw();
   } catch(e) { /* silent */ }
 }
 
