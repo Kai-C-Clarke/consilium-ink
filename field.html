@@ -736,19 +736,10 @@ async function fetchSignals() {
 // Fetch blooms from state
 async function fetchBlooms() {
   try {
-    const r = await fetch(`${API}/field/state`);
+    const r = await fetch(`${API}/field/blooms`);
     if (!r.ok) return;
     const d = await r.json();
-    const raw = d.blooms || [];
-    blooms = raw.map(b => {
-      // blooms store pos as [x,y,z] — convert to theta/phi
-      const pos = b.pos || [];
-      if (pos.length < 3) return null;
-      const [x,y,z] = pos;
-      const phi   = Math.acos(Math.max(-1, Math.min(1, y))) * 180/Math.PI;
-      const theta = (Math.atan2(z, x) * 180/Math.PI + 360) % 360;
-      return { theta, phi };
-    }).filter(Boolean);
+    blooms = d.blooms || [];  // already theta/phi
   } catch(e) { /* silent */ }
 }
 
