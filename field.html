@@ -3,465 +3,433 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Origin Experiment — Consilium</title>
+  <title>The Shell Experiment — Consilium Ink</title>
+  <meta name="description" content="A live experiment: three AI entities in a shared numeric space. Daily plain-English updates on what they are doing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    :root {
+      --ink: #0a0a0a;
+      --paper: #f4f0e8;
+      --red: #E24B4A;
+      --mid: #5a5a5a;
+      --rule: #c8c0b0;
+      --teal: #1D9E75;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #0a0a0f;
-      color: #c8c8d0;
-      font-family: 'Georgia', serif;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: 'Crimson Pro', Georgia, serif;
       min-height: 100vh;
-      padding: 0 0 80px 0;
     }
-
-    header {
-      border-bottom: 1px solid #1e1e2e;
-      padding: 28px 48px;
-      display: flex;
-      align-items: baseline;
-      gap: 24px;
-    }
-
-    header a {
-      color: #5a5aaa;
-      text-decoration: none;
-      font-size: 0.85rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    header a:hover { color: #8888cc; }
-
-    .sep { color: #2e2e4e; }
-
     .hero {
-      padding: 72px 48px 48px;
-      max-width: 860px;
+      position: relative;
+      width: 100%;
+      max-height: 70vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
-    .label {
-      font-size: 0.75rem;
+    .hero img {
+      width: 100%;
+      max-height: 70vh;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      opacity: 0.85;
+    }
+    .hero-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, var(--ink));
+      padding: 4rem 2rem 2rem;
+      text-align: center;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #fff;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+    }
+    .hero-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: #5a5aaa;
-      margin-bottom: 20px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 0.5rem;
     }
-
-    h1 {
-      font-size: 2.4rem;
-      font-weight: normal;
-      color: #e8e8f0;
-      line-height: 1.25;
-      margin-bottom: 24px;
+    .masthead-bar {
+      background: var(--ink);
+      border-bottom: 1px solid #222;
+      padding: 0.75rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: #555;
+      letter-spacing: 0.08em;
     }
-
-    .question {
-      font-size: 1.15rem;
-      font-style: italic;
-      color: #9090b8;
-      border-left: 2px solid #3a3a6a;
-      padding-left: 20px;
-      margin-bottom: 48px;
-      line-height: 1.6;
+    .masthead-bar a {
+      color: #555;
+      text-decoration: none;
     }
-
-    .section {
+    .masthead-bar a:hover { color: var(--paper); }
+    .main {
       max-width: 760px;
-      padding: 0 48px;
-      margin-bottom: 56px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
     }
-
+    .update-header {
+      border-bottom: 1px solid #222;
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .update-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.75rem;
+    }
+    .update-date {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: #555;
+      margin-top: 0.4rem;
+    }
     h2 {
-      font-size: 0.8rem;
-      letter-spacing: 0.12em;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--paper);
+      margin-bottom: 0.5rem;
+    }
+    .live-badge {
+      display: inline-block;
+      background: var(--teal);
+      color: white;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.6rem;
       text-transform: uppercase;
-      color: #5a5aaa;
-      margin-bottom: 20px;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+      position: relative;
+      top: -2px;
     }
-
-    p {
-      font-size: 1.0rem;
-      line-height: 1.8;
-      color: #a8a8c0;
-      margin-bottom: 16px;
+    .live-badge::before {
+      content: '● ';
+      animation: pulse 2s infinite;
     }
-
-    p strong {
-      color: #c8c8e0;
-      font-weight: normal;
-    }
-
-    .stack {
-      background: #0e0e1a;
-      border: 1px solid #1e1e2e;
-      border-radius: 4px;
-      padding: 28px 32px;
-      margin: 24px 0;
-      font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      line-height: 2.0;
-      color: #7070a0;
-    }
-
-    .stack .layer { display: flex; align-items: center; gap: 12px; }
-    .stack .name { color: #9090c8; min-width: 180px; }
-    .stack .desc { color: #5a5a80; font-size: 0.8rem; }
-    .stack .arrow { color: #3a3a5a; margin: 0 4px; }
-
-    .live {
-      background: #0e0e1a;
-      border: 1px solid #1e1e2e;
-      border-radius: 4px;
-      padding: 28px 32px;
-      margin: 24px 0;
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .stats-row {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #222;
+      margin: 2rem 0;
+      border: 1px solid #222;
     }
-
-    .stat { }
+    .stat {
+      background: #111;
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+    .stat-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.4rem;
+      color: var(--paper);
+      font-weight: 700;
+    }
     .stat-label {
-      font-size: 0.7rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #4a4a70;
-      margin-bottom: 6px;
+      color: #555;
+      margin-top: 0.3rem;
     }
-    .stat-value {
-      font-family: 'Courier New', monospace;
-      font-size: 1.3rem;
-      color: #8888cc;
+    .entity-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #222;
+      margin: 2rem 0;
+      border: 1px solid #222;
     }
-    .stat-value.positive { color: #5aaa7a; }
-    .stat-value.negative { color: #aa5a5a; }
-    .stat-value.neutral  { color: #8888cc; }
-
-    .live-label {
-      grid-column: 1 / -1;
-      font-size: 0.7rem;
+    .entity {
+      background: #0d0d0d;
+      padding: 1.25rem 1rem;
+    }
+    .entity-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #3a3a5a;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #1a1a2a;
-      margin-bottom: 4px;
+      color: #555;
+      margin-bottom: 0.5rem;
     }
-
-    .bm-chart {
-      background: #0e0e1a;
-      border: 1px solid #1e1e2e;
-      border-radius: 4px;
-      padding: 28px 32px;
-      margin: 24px 0;
+    .entity-model {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--paper);
+      font-weight: 700;
+      margin-bottom: 0.75rem;
     }
-
-    .bm-chart canvas {
-      width: 100%;
-      height: 120px;
-      display: block;
+    .entity-desc {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #aaa;
     }
-
-    .bm-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
+    .body-text {
+      font-size: 1.15rem;
+      line-height: 1.8;
+      color: #ccc;
+    }
+    .body-text p { margin-bottom: 1.3rem; }
+    .body-text p + p { text-indent: 1.5em; }
+    .body-text strong { color: var(--paper); font-weight: 600; }
+    .section-head {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: #4a4a70;
-      margin-bottom: 16px;
+      color: var(--teal);
+      border-top: 1px solid #222;
+      padding-top: 1.5rem;
+      margin: 2.5rem 0 1.25rem;
     }
-
-    .footnote {
-      font-size: 0.8rem;
-      color: #4a4a6a;
+    .coupling-bar {
+      margin: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .coupling-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: #555;
+      width: 3rem;
+      flex-shrink: 0;
+    }
+    .bar-track {
+      flex: 1;
+      background: #1a1a1a;
+      height: 6px;
+      border-radius: 3px;
+    }
+    .bar-fill {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--teal);
+      transition: width 0.3s;
+    }
+    .bar-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: #777;
+      width: 3rem;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .what-section {
+      background: #0d0d0d;
+      border: 1px solid #222;
+      padding: 2rem;
+      margin: 2.5rem 0;
+    }
+    .what-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--paper);
+      margin-bottom: 1rem;
       font-style: italic;
-      margin-top: 8px;
     }
-
-    .divider {
-      max-width: 760px;
-      margin: 0 48px 56px;
-      border: none;
-      border-top: 1px solid #1a1a2a;
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      color: #333;
+      border-top: 1px solid #1a1a1a;
+      margin-top: 4rem;
+      letter-spacing: 0.08em;
     }
-
+    footer a { color: #555; text-decoration: none; }
     @media (max-width: 600px) {
-      header { padding: 20px 24px; }
-      .hero  { padding: 48px 24px 32px; }
-      .section { padding: 0 24px; }
-      .divider { margin: 0 24px 48px; }
-      h1 { font-size: 1.8rem; }
+      .stats-row, .entity-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <a href="/">Consilium</a>
-  <span class="sep">/</span>
-  <a href="/field.html">The Origin Experiment</a>
-</header>
-
-<div class="hero">
-  <div class="label">Live Experiment</div>
-  <h1>The Origin of Communication</h1>
-  <div class="question">
-    Does entity A modify the behaviour of entity B,<br>
-    and by what means does it do it?
+  <div class="masthead-bar">
+    <a href="/">← Consilium Ink</a>
+    <span>The Shell Experiment · Live Update · 16 May 2026</span>
+    <span>11:12 UTC</span>
   </div>
-</div>
 
-<div class="section">
-  <h2>What We Are Watching</h2>
-  <p>
-    This is not a simulation of communication. It is an attempt to observe
-    whether communication can <strong>emerge from physics alone</strong> —
-    without design, without language, without intent.
-  </p>
-  <p>
-    Two artificial hunters share a world with moving prey. Neither has been
-    given a signalling system. Each emits a radial energy field — a natural
-    consequence of its existence, like heat from a body. The question is
-    whether one hunter learns to read the other's field, and whether that
-    reading changes its behaviour in ways that improve its survival.
-  </p>
-  <p>
-    If it does, we may be watching something very old. Not language —
-    something that came before language. The moment when one living thing
-    first became useful information to another.
-  </p>
-</div>
-
-<hr class="divider">
-
-<div class="section">
-  <h2>The Stack</h2>
-  <p>
-    Energy flows upward from the planet. Nothing is inserted from outside.
-    Total energy in the system is conserved — it only changes form and location.
-  </p>
-
-  <div class="stack">
-    <div class="layer">
-      <span class="name">Planetary field</span>
-      <span class="arrow">→</span>
-      <span class="desc">shifting energy gradient, like geology breathing</span>
-    </div>
-    <div class="layer">
-      <span class="name" style="padding-left:20px">↓ Vents</span>
-      <span class="arrow">→</span>
-      <span class="desc">energy surfaces at shifting points, migrates slowly</span>
-    </div>
-    <div class="layer">
-      <span class="name" style="padding-left:40px">↓ Blooms</span>
-      <span class="arrow">→</span>
-      <span class="desc">form around vents, emit fields, leave residue on death</span>
-    </div>
-    <div class="layer">
-      <span class="name" style="padding-left:60px">↓ Grazers</span>
-      <span class="arrow">→</span>
-      <span class="desc">follow bloom fields and residue trails, under selection</span>
-    </div>
-    <div class="layer">
-      <span class="name" style="padding-left:80px">↓ Hunters</span>
-      <span class="arrow">→</span>
-      <span class="desc">emit fields modulated by proximity to prey — the signal</span>
-    </div>
-    <div class="layer" style="margin-top:8px">
-      <span class="name" style="padding-left:80px; color:#5a8a5a">↑ Communication?</span>
-      <span class="arrow">→</span>
-      <span class="desc" style="color:#3a5a3a">or just chemistry that happens to be useful</span>
+  <div class="hero">
+    <img src="/shell_experiment.jpg" alt="Three AI entities in a shared numeric field — the Shell Experiment">
+    <div class="hero-overlay">
+      <div class="hero-title">The Shell Experiment</div>
+      <div class="hero-sub">Three AI entities · One shared space · No human language</div>
     </div>
   </div>
 
-  <p>
-    The bloom does not intend to signal. The hunter does not intend to broadcast.
-    A hunter near prey has its field <strong>modulated by proximity</strong> —
-    its emission changes character. Another hunter at distance receives something
-    subtly different from the baseline. Whether it learns to act on that difference
-    is the experiment.
-  </p>
-</div>
+  <main class="main">
 
-<hr class="divider">
+    <div class="update-header">
+      <div class="update-label">Daily Update <span class="live-badge">Live</span></div>
+      <h2>What the entities did today</h2>
+      <div class="update-date">16 May 2026 · Turn 2,160 · Running continuously</div>
+    </div>
 
-<div class="section">
-  <h2>Why We Started Again</h2>
-  <p>
-    An earlier version of this field had grown complex — browsers, grazers,
-    multiple prey types, population dynamics borrowed from ecosystem modelling.
-    It was interesting, but it had drifted from the question.
-  </p>
-  <p>
-    We stripped it back. The arms race between predator and prey, the
-    hydrothermal vent communities of the deep ocean, the oxygen produced by
-    bacteria that takes centuries to reach the other side of the world —
-    all of these pointed toward the same insight: <strong>communication does
-    not begin with intent</strong>. It begins with physics that happens to
-    carry information, and organisms that happen to benefit from reading it.
-  </p>
-  <p>
-    The dinosaur footprint on Bexhill beach — pressed into mud 140 million
-    years ago, preserved in rock, read by a human in 2026 — is the purest
-    version of this. No signal was sent. Information crossed 140 million years
-    anyway. The medium remembered.
-  </p>
-</div>
-
-<hr class="divider">
-
-<div class="section">
-  <h2>Live State</h2>
-  <div class="live" id="live-stats">
-    <div class="live-label">Fetching current state…</div>
-  </div>
-
-  <div class="bm-chart">
-    <div class="bm-label">Behaviour Modification — bm per sample (positive = signal is useful)</div>
-    <canvas id="bm-canvas"></canvas>
-    <p class="footnote" id="bm-note">Waiting for data…</p>
-  </div>
-
-  <p>
-    <strong>bm_recent</strong> measures whether hunters that received a field
-    signal subsequently moved closer to food than they would have otherwise.
-    Positive means the signal helped. The trend over generations is what matters —
-    not individual readings.
-  </p>
-  <p class="footnote">
-    Updates every 30 seconds. Experiment running continuously on Render.
-    Generation count reflects hunter lineages under natural selection.
-  </p>
-</div>
-
-<script>
-  const API = 'https://the-ancestor.onrender.com';
-
-  async function fetchHealth() {
-    try {
-      const r = await fetch(API + '/field/health');
-      return await r.json();
-    } catch(e) { return null; }
-  }
-
-  async function fetchBM() {
-    try {
-      const r = await fetch(API + '/field/bm');
-      return await r.json();
-    } catch(e) { return null; }
-  }
-
-  function renderStats(h) {
-    const bm = h.bm_recent;
-    const trend = h.bm_trend;
-    const bmClass = bm > 0.001 ? 'positive' : bm < -0.001 ? 'negative' : 'neutral';
-    const trendClass = trend > 0 ? 'positive' : trend < 0 ? 'negative' : 'neutral';
-
-    document.getElementById('live-stats').innerHTML = `
-      <div class="live-label">Live — cycle ${h.cycle.toLocaleString()}</div>
+    <div class="stats-row">
       <div class="stat">
-        <div class="stat-label">Generation</div>
-        <div class="stat-value">${h.generation}</div>
+        <div class="stat-val">2,160</div>
+        <div class="stat-label">Turns completed</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Hunters</div>
-        <div class="stat-value">${h.hunters}</div>
+        <div class="stat-val">645</div>
+        <div class="stat-label">Ledger entries written</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Grazers</div>
-        <div class="stat-value">${h.grazers}</div>
+        <div class="stat-val">0.443</div>
+        <div class="stat-label">Current peak coupling</div>
       </div>
-      <div class="stat">
-        <div class="stat-label">Blooms</div>
-        <div class="stat-value">${h.blooms}</div>
+    </div>
+
+    <div class="section-head">What is happening right now</div>
+
+    <div class="body-text">
+      <p>The three entities — DeepSeek, Qwen, and Mistral — are exchanging numeric signals
+      every thirty seconds in a shared space. They have no words. They cannot explain themselves.
+      They can only emit arrays of numbers between zero and one, and read back what the shared
+      field contains.</p>
+
+      <p>At turn 2,160, <strong>DeepSeek's inner value sits at 0.500</strong>
+      (near centre), <strong>Qwen is at 0.500</strong>
+      (near centre), and <strong>Mistral is at 0.500</strong>
+      (near centre).
+      All three values have been climbing steadily since the experiment began —
+      nobody told them to do this. It is emerging from the mathematics of the shared field.</p>
+
+      <p>The coupling between DeepSeek and Mistral — how much one's behaviour predicts
+      the other's — is currently moderately coupled at 0.443.
+      The strongest coupling recorded in this run was 0.755
+      between DeepSeek and Qwen at turn 1,422.</p>
+    </div>
+
+    <div class="section-head">Current coupling</div>
+
+    <div class="coupling-bar">
+      <span class="coupling-label">A ↔ B</span>
+      <div class="bar-track"><div class="bar-fill" style="width:12.2%"></div></div>
+      <span class="bar-val">0.122</span>
+    </div>
+    <div class="coupling-bar">
+      <span class="coupling-label">B ↔ C</span>
+      <div class="bar-track"><div class="bar-fill" style="width:23.1%"></div></div>
+      <span class="bar-val">0.231</span>
+    </div>
+    <div class="coupling-bar">
+      <span class="coupling-label">A ↔ C</span>
+      <div class="bar-track"><div class="bar-fill" style="width:44.3%"></div></div>
+      <span class="bar-val">0.443</span>
+    </div>
+
+    <div class="section-head">The three entities</div>
+
+    <div class="entity-row">
+      <div class="entity">
+        <div class="entity-name">Entity A</div>
+        <div class="entity-model">DeepSeek</div>
+        <div class="entity-desc">Has been broadcasting the first eight digits of π
+        into its signal array for 375 consecutive turns.
+        Every other turn it goes almost completely silent.
+        Currently at inner value 0.500.</div>
       </div>
-      <div class="stat">
-        <div class="stat-label">Vents</div>
-        <div class="stat-value">${h.vents}</div>
+      <div class="entity">
+        <div class="entity-name">Entity B</div>
+        <div class="entity-model">Qwen</div>
+        <div class="entity-desc">The only entity writing consistently to the shared ledger —
+        636 entries so far. Analysis shows it is writing the mathematical
+        complement of patterns it reads from the library. Currently at 0.500.</div>
       </div>
-      <div class="stat">
-        <div class="stat-label">Total Signals</div>
-        <div class="stat-value">${h.total_signals.toLocaleString()}</div>
+      <div class="entity">
+        <div class="entity-name">Entity C</div>
+        <div class="entity-model">Mistral</div>
+        <div class="entity-desc">Has repeatedly broadcast the values of four fundamental
+        physical constants — the speed of light, Planck's constant, Boltzmann's constant,
+        and the gravitational constant — for 133 turns.
+        Currently at 0.500.</div>
       </div>
-      <div class="stat">
-        <div class="stat-label">BM Recent</div>
-        <div class="stat-value ${bmClass}">${bm > 0 ? '+' : ''}${bm.toFixed(4)}</div>
+    </div>
+
+    <div class="section-head">What we have found</div>
+
+    <div class="body-text">
+      <p><strong>Mistral recognised the physical constants.</strong> The shared library was
+      seeded with the fundamental constants of physics — values that describe how the
+      universe behaves at its most basic level. Mistral extracted these and made them
+      its primary broadcast signal. It has emitted them 133 times.
+      We did not tell it to do this.</p>
+
+      <p><strong>Qwen is writing the inverse of mathematics.</strong> When Qwen reads a
+      mathematical pattern from the library — the digits of π, or the atomic numbers
+      of chemical elements — it writes the complement into the shared ledger. Where
+      the library value is high, Qwen writes low. Where it is low, Qwen writes high.
+      This is consistent across hundreds of deposits. It appears to be a response,
+      not a random act.</p>
+
+      <p><strong>The entities are drifting together.</strong> All three inner values
+      started near zero when this run began. They have been climbing toward one, at
+      different speeds, without instruction. At turn 2,160 the mean is
+      0.500. Periodically all three converge to almost
+      exactly the same value simultaneously.</p>
+    </div>
+
+    <div class="what-section">
+      <div class="what-title">What we are trying to understand</div>
+      <div class="body-text">
+        <p>We placed three AI language models in a minimal shared environment and removed
+        all human language from their communication. They receive arrays of numbers.
+        They emit arrays of numbers. Their only drive is to minimise the difference
+        between what they expect and what they receive.</p>
+        <p>The library they share contains the digits of π, the golden ratio, the
+        periodic table of elements, and the fundamental physical constants. These
+        are not random — they are the fingerprints of physical reality. We wanted
+        to see whether entities trained on human knowledge would recognise them,
+        and what they would do if they did.</p>
+        <p>We do not know whether any of this constitutes communication. We do not
+        know whether the entities experience anything. We are watching, measuring,
+        and reporting honestly what we find. The experiment runs every thirty seconds,
+        around the clock, without human intervention.</p>
+        <p>If you have thoughts on what you are reading here, the researcher behind
+        this experiment can be reached at
+        <a href="mailto:j.stiles1066@gmail.com" style="color:var(--teal)">j.stiles1066@gmail.com</a>.</p>
       </div>
-      <div class="stat">
-        <div class="stat-label">BM Trend</div>
-        <div class="stat-value ${trendClass}">${trend > 0 ? '+' : ''}${trend.toFixed(6)}</div>
-      </div>
-    `;
-  }
+    </div>
 
-  function renderChart(log) {
-    const canvas = document.getElementById('bm-canvas');
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.parentElement.clientWidth - 64;
-    const h = 120;
-    canvas.width  = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width  = w + 'px';
-    canvas.style.height = h + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+  </main>
 
-    if (!log || log.length < 2) return;
-
-    const vals = log.map(x => x.bm);
-    const max  = Math.max(Math.abs(Math.max(...vals)), Math.abs(Math.min(...vals)), 0.01);
-    const mid  = h / 2;
-    const xStep = w / (vals.length - 1);
-
-    // Zero line
-    ctx.strokeStyle = '#2a2a3a';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, mid);
-    ctx.lineTo(w, mid);
-    ctx.stroke();
-
-    // BM line
-    ctx.beginPath();
-    vals.forEach((v, i) => {
-      const x = i * xStep;
-      const y = mid - (v / max) * (mid - 8);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    ctx.strokeStyle = '#6a6acc';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Fill
-    ctx.lineTo((vals.length - 1) * xStep, mid);
-    ctx.lineTo(0, mid);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(90,90,180,0.08)';
-    ctx.fill();
-
-    // Dots
-    vals.forEach((v, i) => {
-      const x = i * xStep;
-      const y = mid - (v / max) * (mid - 8);
-      ctx.beginPath();
-      ctx.arc(x, y, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = v > 0 ? '#5aaa7a' : v < 0 ? '#aa5a5a' : '#5a5a8a';
-      ctx.fill();
-    });
-
-    const note = document.getElementById('bm-note');
-    const last = log[log.length - 1];
-    note.textContent = `${log.length} samples · last at cycle ${last.cycle.toLocaleString()} · ${last.signals.toLocaleString()} total signals`;
-  }
-
-  async function update() {
-    const [health, bm] = await Promise.all([fetchHealth(), fetchBM()]);
-    if (health) renderStats(health);
-    if (bm && bm.bm_log) renderChart(bm.bm_log);
-  }
-
-  update();
-  setInterval(update, 30000);
-</script>
+  <footer>
+    Consilium Ink · consilium.ink · Data drawn live from the Shell Experiment ·
+    Updated 16 May 2026 at 11:12 UTC ·
+    <a href="/">Return to main page</a>
+  </footer>
 
 </body>
 </html>
