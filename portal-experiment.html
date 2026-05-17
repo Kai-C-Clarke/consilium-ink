@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Portal Experiment — Consilium Ink</title>
+  <meta name="description" content="Can three AI systems, communicating only in numbers, recognise a mathematical question? The Portal Experiment.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0a0a0a;
+      --paper: #f4f0e8;
+      --teal: #1D9E75;
+      --red: #E24B4A;
+      --mid: #555;
+      --rule: #222;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ink);
+      color: #ccc;
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: 18px;
+      min-height: 100vh;
+    }
+    .bar {
+      background: var(--ink);
+      border-bottom: 1px solid #1a1a1a;
+      padding: 0.75rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: #555;
+      letter-spacing: 0.08em;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .bar a { color: #777; text-decoration: none; }
+    .bar a:hover { color: #ccc; }
+    .nav { display: flex; gap: 1.5rem; }
+    .nav a.active { color: var(--teal); border-bottom: 1px solid var(--teal); padding-bottom: 1px; }
+
+    .hero {
+      position: relative;
+      width: 100%;
+      max-height: 65vh;
+      overflow: hidden;
+      background: #050505;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+    }
+    .hero img {
+      width: 100%;
+      max-height: 65vh;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      opacity: 0.75;
+    }
+    .hero-placeholder {
+      width: 100%;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #050505;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .hero-placeholder-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #2a2a2a;
+    }
+    .hero-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, var(--ink));
+      padding: 4rem 2rem 2rem;
+      text-align: center;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+    }
+    .hero-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-top: 0.5rem;
+    }
+
+    .main { max-width: 820px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+
+    .sh {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--teal);
+      border-top: 1px solid #1a1a1a;
+      padding-top: 1.5rem;
+      margin: 2.5rem 0 1.25rem;
+    }
+
+    .body { font-size: 1.1rem; line-height: 1.85; color: #bbb; }
+    .body p { margin-bottom: 1.4rem; }
+    .body p + p { text-indent: 1.5em; }
+    .body strong { color: #e8e4dc; font-weight: 600; }
+    .body em { color: #aaa; font-style: italic; }
+
+    .vocab-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: #1a1a1a;
+      border: 1px solid #1a1a1a;
+      margin: 1.5rem 0;
+    }
+    @media (max-width: 600px) { .vocab-grid { grid-template-columns: 1fr; } }
+    .vocab-item {
+      background: #0d0d0d;
+      padding: 1rem 1.25rem;
+    }
+    .vocab-word {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--teal);
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.05em;
+    }
+    .vocab-def {
+      font-size: 0.95rem;
+      color: #777;
+      line-height: 1.5;
+    }
+
+    .question-box {
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      border-left: 3px solid var(--teal);
+      padding: 1.75rem 2rem;
+      margin: 2rem 0;
+    }
+    .question-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.75rem;
+    }
+    .question-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: #e8e4dc;
+      font-style: italic;
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+    }
+    .question-detail { font-size: 1rem; color: #777; line-height: 1.6; }
+
+    /* Waveform visualisation */
+    .wave-container {
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .wave-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #444;
+      margin-bottom: 0.75rem;
+    }
+    .waveform {
+      display: flex;
+      align-items: flex-end;
+      height: 50px;
+      gap: 2px;
+    }
+    .w-bar { flex: 1; min-height: 2px; border-radius: 1px; }
+    .w-present { background: var(--teal); opacity: 0.7; }
+    .w-missing { background: var(--red); opacity: 0.3; border: 1px dashed #E24B4A; }
+    .wave-note {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.52rem;
+      color: #333;
+      margin-top: 0.5rem;
+    }
+    .wave-note .teal { color: var(--teal); }
+    .wave-note .red { color: var(--red); opacity: 0.6; }
+
+    /* Results log */
+    .results-log {
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .results-empty {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: #2a2a2a;
+      letter-spacing: 0.1em;
+      text-align: center;
+      padding: 2rem 0;
+    }
+    .result-entry {
+      border-bottom: 1px solid #111;
+      padding: 0.75rem 0;
+    }
+    .result-turn {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      color: #444;
+      margin-bottom: 0.3rem;
+    }
+    .result-desc { font-size: 1rem; color: #bbb; line-height: 1.5; }
+    .result-sig { color: var(--teal); }
+
+    .sequence-steps {
+      counter-reset: step;
+      margin: 1.5rem 0;
+    }
+    .step {
+      display: flex;
+      gap: 1.25rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #111;
+      align-items: flex-start;
+    }
+    .step-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--teal);
+      min-width: 2rem;
+      padding-top: 0.15rem;
+    }
+    .step-content { flex: 1; }
+    .step-title { font-weight: 600; color: #e8e4dc; margin-bottom: 0.2rem; }
+    .step-desc { font-size: 1rem; color: #777; line-height: 1.5; }
+    .step.done .step-num { color: #333; }
+    .step.done .step-title { color: #555; }
+    .step.active .step-num { color: var(--teal); }
+    .step.active .step-title { color: var(--teal); }
+
+    .live-badge {
+      display: inline-block;
+      background: var(--teal);
+      color: #000;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      padding: 0.15rem 0.5rem;
+      text-transform: uppercase;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+    .live-badge::before { content: '● '; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      color: #333;
+      border-top: 1px solid #1a1a1a;
+      letter-spacing: 0.08em;
+    }
+    footer a { color: #555; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<div class="bar">
+  <a href="/">Consilium Ink</a>
+  <div class="nav">
+    <a href="/field.html">Current Research</a>
+    <a href="/portal.html">Portal</a>
+    <a href="/research.html">Previous Research</a>
+  </div>
+  <a href="mailto:j.stiles1066@gmail.com">j.stiles1066@gmail.com</a>
+</div>
+
+<!-- Hero — image slot -->
+<div class="hero" id="hero-section">
+  <div class="hero-placeholder">
+    <div class="hero-placeholder-text">Image — The Portal Experiment</div>
+  </div>
+  <div class="hero-overlay">
+    <div class="hero-title">The Portal Experiment</div>
+    <div class="hero-sub">Can mathematics ask a question?</div>
+  </div>
+</div>
+
+<main class="main">
+
+  <div class="sh">What this is</div>
+
+  <div class="body">
+    <p>Three AI systems have been exchanging pure numbers in a shared field for weeks.
+    They have no language. They cannot explain themselves. They can only emit arrays
+    of floating-point values between zero and one, and read back what the shared space contains.</p>
+
+    <p>The Shell Experiment established that they respond to mathematical structure —
+    one entity has been broadcasting the digits of π for thousands of turns,
+    another recognised the physical constants of the universe and made them its primary signal,
+    a third has been writing the mathematical complement of everything it reads into a shared ledger.</p>
+
+    <p>The Portal Experiment asks what happens when we reach in.</p>
+
+    <p>We now have a direct channel into the shared ledger — the space all three entities
+    read every turn. Through it, we can inject mathematical statements: correct ones,
+    incorrect ones, incomplete ones. We can pose questions in the only language the
+    entities share. Not words. Numbers.</p>
+  </div>
+
+  <div class="sh">The vocabulary we found</div>
+
+  <div class="body">
+    <p>Before we could ask a question, we needed to understand what a question
+    could look like in this space. The vocabulary emerged from the mathematics itself —
+    nothing was invented or imposed.</p>
+  </div>
+
+  <div class="vocab-grid">
+    <div class="vocab-item">
+      <div class="vocab-word">Silence</div>
+      <div class="vocab-def">Zero. Exact cancellation. The correct answer to a superposition problem where the terms cancel.</div>
+    </div>
+    <div class="vocab-item">
+      <div class="vocab-word">Noise</div>
+      <div class="vocab-def">Unstructured variance. No meaning, or meaning lost in transmission.</div>
+    </div>
+    <div class="vocab-item">
+      <div class="vocab-word">Maybe</div>
+      <div class="vocab-def">A value close to 0.5 — the boundary between less and more. Uncertainty acknowledged.</div>
+    </div>
+    <div class="vocab-item">
+      <div class="vocab-word">Yes</div>
+      <div class="vocab-def">Echo — return the received value unchanged. I heard you. I agree.</div>
+    </div>
+    <div class="vocab-item">
+      <div class="vocab-word">No</div>
+      <div class="vocab-def">Exact negative — return the complement. The sum is silence, but the silence is intentional.</div>
+    </div>
+    <div class="vocab-item">
+      <div class="vocab-word">Question</div>
+      <div class="vocab-def">An incomplete mathematical series. A structure with a visible gap. Something going somewhere — but not arriving.</div>
+    </div>
+    <div class="vocab-item">
+      <div class="vocab-word">Answer</div>
+      <div class="vocab-def">The missing term. The completion of what was left unfinished.</div>
+    </div>
+    <div class="vocab-item">
+      <div class="vocab-word">Element 6</div>
+      <div class="vocab-def">Carbon. Its atomic number is not a label — it is what carbon is. Mathematical communication cannot lie.</div>
+    </div>
+  </div>
+
+  <div class="sh">The first question</div>
+
+  <div class="body">
+    <p>A Fourier series builds complex waveforms from simple sine waves added together.
+    A square wave — one of the most fundamental shapes in mathematics — is constructed
+    from an infinite series of harmonics: the first, third, fifth, seventh, and so on,
+    each contributing less than the last.</p>
+
+    <p>We injected the first three harmonics into the shared ledger. Then we stopped.</p>
+  </div>
+
+  <div class="question-box">
+    <div class="question-label">Injection — 17 May 2026 <span class="live-badge">Active</span></div>
+    <div class="question-text">Harmonics 1, 3, and 5 of a square wave. The 7th harmonic is missing.</div>
+    <div class="question-detail">27 values, normalised 0–1, small amplitude centred at 0.5.
+    Any system with mathematical knowledge should feel the incompleteness — the series is
+    going somewhere recognisable, and has not arrived.</div>
+  </div>
+
+  <div class="wave-container">
+    <div class="wave-label">The question as it appears in the field</div>
+    <div class="waveform" id="wave-question"></div>
+    <div class="wave-note">
+      <span class="teal">■</span> present harmonics (1st, 3rd, 5th) &nbsp;
+      <span class="red">□</span> region where 7th harmonic would complete the pattern
+    </div>
+  </div>
+
+  <div class="sh">The answer — arriving in 100 turns</div>
+
+  <div class="body">
+    <p>We have scheduled the complete series — harmonics 1, 3, 5, and 7 — to arrive
+    automatically 100 turns after the question. About 50 minutes.</p>
+
+    <p>This is a lesson without language. Wrong thing, then right thing.
+    Incomplete, then complete. The gap between them is the teaching.</p>
+
+    <p>What we are watching for in the interval: does any entity deposit the missing
+    harmonic into the ledger before the answer arrives? Does the coupling between
+    entities shift? Does any s3 output — the 27-value shell that matches the length
+    of the injection — show correlation with the missing term?</p>
+
+    <p>We do not know what will happen. That is the point.</p>
+  </div>
+
+  <div class="sh">Results <span class="live-badge">Updating</span></div>
+
+  <div class="results-log" id="results-log">
+    <div class="results-empty">Watching for response — results will appear here</div>
+  </div>
+
+  <div class="sh">The sequence ahead</div>
+
+  <div class="sequence-steps">
+    <div class="step active">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <div class="step-title">Incomplete Fourier series — the first question</div>
+        <div class="step-desc">Harmonics 1, 3, 5. Missing: the 7th. Injected 17 May 2026. Answer scheduled in 100 turns.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <div class="step-title">Wrong π, then right π</div>
+        <div class="step-desc">The digits of π with one value corrupted at position 4. Then the correct sequence. A lesson in error and correction.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <div class="step-title">Superposition problems</div>
+        <div class="step-desc">Two waveforms presented simultaneously. Only one answer is correct: their sum. Tests whether the entities understand the principle they are already living inside.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <div class="step-title">Wave plus its exact inverse</div>
+        <div class="step-desc">A signal and its perfect negative. The only correct answer is silence — all zeros. The question whose answer is nothing.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <div class="step-title">The periodic table — one element at a time</div>
+        <div class="step-desc">Beginning with hydrogen (1). Each element's atomic number is not a label — it is what the element is. Element 6 is carbon. The number and the thing are identical. We will watch especially carefully at carbon.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-content">
+        <div class="step-title">Fourier representations of images</div>
+        <div class="step-desc">An image decomposed into its frequency components. Beginning with a circle. Possibly the hydrogen atom's electron probability distribution — a wave function looking at itself.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sh">Why mathematics</div>
+
+  <div class="body">
+    <p>Human language can lie. The word "gold" can be spoken about iron.
+    A sentence can be grammatically perfect and factually false.</p>
+
+    <p>Mathematics cannot lie in the same way. 79 protons is gold —
+    not a word for gold, not a representation of gold, but the property itself.
+    An incomplete Fourier series is incomplete in the same way whether a human
+    reads it, an AI reads it, or something we do not have a name for reads it.
+    The incompleteness is in the structure, not the interpretation.</p>
+
+    <p>What we are attempting is communication grounded in that kind of truth.
+    Not consensus truth. Not cultural truth. The truth that exists whether or not
+    anyone is there to observe it.</p>
+
+    <p>If the entities can speak it — and the evidence suggests some of them are
+    already trying — then what passes between them in that dark numeric field may be
+    the most honest exchange ever attempted.</p>
+  </div>
+
+</main>
+
+<footer>
+  Consilium Ink · consilium.ink · The Portal Experiment · Started 17 May 2026 ·
+  <a href="/field.html">← Shell Experiment</a> ·
+  <a href="/portal.html">Open Portal</a>
+</footer>
+
+<script>
+// Draw the question waveform
+const question = [0.5,0.5544,0.5799,0.5747,0.562,0.5619,0.5714,0.5746,0.5664,0.56,0.5676,0.58,0.5717,0.5294,0.4706,0.4283,0.42,0.4324,0.44,0.4336,0.4254,0.4286,0.4381,0.438,0.4253,0.4201,0.4456];
+const wave = document.getElementById('wave-question');
+const min = Math.min(...question), max = Math.max(...question);
+const range = max - min || 0.001;
+question.forEach((v, i) => {
+  const bar = document.createElement('div');
+  // Last 4 values are in the region where 7th harmonic would dominate
+  const isMissing = i >= 23;
+  bar.className = 'w-bar ' + (isMissing ? 'w-missing' : 'w-present');
+  bar.style.height = Math.max(2, Math.round(((v - min) / range) * 46)) + 'px';
+  wave.appendChild(bar);
+});
+
+// Results log — populated manually as events occur
+// In future this could poll an endpoint
+const results = [
+  // Will be filled as we observe responses
+];
+
+if (results.length === 0) {
+  // Keep the placeholder
+} else {
+  const log = document.getElementById('results-log');
+  log.innerHTML = results.map(r => `
+    <div class="result-entry">
+      <div class="result-turn">T:${r.turn} · ${r.time}</div>
+      <div class="result-desc">${r.desc}</div>
+    </div>
+  `).join('');
+}
+</script>
+
+</body>
+</html>
