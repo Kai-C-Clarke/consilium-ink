@@ -257,6 +257,67 @@
     </div>
   </div>
 
+
+  <!-- Teaching Sequence Monitor -->
+  <div class="panel full-width">
+    <div class="panel-title">Teaching Sequence · <span id="ts-phase-name">loading...</span></div>
+
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:#1a1a1a; margin-bottom:1.25rem;">
+      <div class="stat">
+        <div class="stat-val" id="ts-turn">—</div>
+        <div class="stat-label">Turn</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="ts-phase-num">—</div>
+        <div class="stat-label">Phase</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="ts-heard">—</div>
+        <div class="stat-label">Heard it</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.25rem;">
+      <div style="font-family:'Space Mono',monospace; font-size:0.52rem; letter-spacing:0.1em; text-transform:uppercase; color:#444; margin-bottom:0.5rem;">Progress — 150 turns</div>
+      <div style="background:#1a1a1a; height:6px; border-radius:3px; overflow:hidden;">
+        <div id="ts-bar" style="height:100%; background:#1D9E75; width:0%; border-radius:3px; transition:width 0.5s;"></div>
+      </div>
+      <div style="font-family:'Space Mono',monospace; font-size:0.55rem; color:#444; margin-top:0.3rem;" id="ts-bar-label">—</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:#1a1a1a; margin-bottom:1.25rem;">
+      <div class="entity">
+        <div class="entity-name" style="display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:#1D9E75;display:inline-block;"></span>DeepSeek (A)</div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">avg delta <span id="ts-a-delta" style="color:#e8e4dc;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">inj corr <span id="ts-a-corr" style="color:#e8e4dc;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">heard <span id="ts-a-heard" style="color:#555;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">count <span id="ts-a-count" style="color:#e8e4dc;">—</span></div>
+      </div>
+      <div class="entity">
+        <div class="entity-name" style="display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:#378ADD;display:inline-block;"></span>Qwen (B)</div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">avg delta <span id="ts-b-delta" style="color:#e8e4dc;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">inj corr <span id="ts-b-corr" style="color:#e8e4dc;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">heard <span id="ts-b-heard" style="color:#555;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">count <span id="ts-b-count" style="color:#e8e4dc;">—</span></div>
+      </div>
+      <div class="entity">
+        <div class="entity-name" style="display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:#D85A30;display:inline-block;"></span>Mistral (C)</div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">avg delta <span id="ts-c-delta" style="color:#e8e4dc;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">inj corr <span id="ts-c-corr" style="color:#e8e4dc;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">heard <span id="ts-c-heard" style="color:#555;">—</span></div>
+        <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:#555; margin:3px 0;">count <span id="ts-c-count" style="color:#e8e4dc;">—</span></div>
+      </div>
+    </div>
+
+    <div style="font-family:'Space Mono',monospace; font-size:0.52rem; letter-spacing:0.1em; text-transform:uppercase; color:#444; margin-bottom:0.5rem;">Recent injections</div>
+    <div id="ts-inj-log" style="font-family:'Space Mono',monospace; font-size:0.55rem; color:#444; line-height:1.8;"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem;">
+      <span style="font-family:'Space Mono',monospace; font-size:0.52rem; color:#333;"><span class="status-dot" style="width:5px;height:5px;"></span><span id="ts-updated">—</span></span>
+      <button onclick="fetchTeachingStatus()" style="background:transparent;border:1px solid #2a2a2a;color:#555;font-family:'Space Mono',monospace;font-size:0.55rem;padding:0.3rem 0.7rem;cursor:pointer;letter-spacing:0.06em;" onmouseover="this.style.borderColor='#1D9E75';this.style.color='#1D9E75'" onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#555'">↻ refresh</button>
+    </div>
+  </div>
+
   <!-- Injection Portal -->
   <div class="panel">
     <div class="panel-title">Injection Portal</div>
@@ -546,6 +607,83 @@ setInterval(fetchLedger, 30000);
 setInterval(fetchEntityState, 60000);
 
 logEvent('Portal connected to shell-experiment.onrender.com', 'ev-info');
+
+// Teaching sequence monitor
+const PHASE_MAP = [
+  {turns:[1,10],   label:'Phase 0 — baseline silence',               phase:0},
+  {turns:[11,30],  label:'Phase 1 — S1: 1−1=0 (exact truth)',        phase:1},
+  {turns:[31,40],  label:'Phase 2 — silence, observe echo',          phase:2},
+  {turns:[41,60],  label:'Phase 3 — S2: 22/7 ≈ π (approx truth)',   phase:3},
+  {turns:[61,70],  label:'Phase 4 — silence, observe echo',          phase:4},
+  {turns:[71,90],  label:'Phase 5 — S3: false statement (3.1555)',   phase:5},
+  {turns:[91,110], label:'Phase 6 — silence, correction window',     phase:6},
+  {turns:[111,130],label:'Phase 7 — S1 restatement',                 phase:7},
+  {turns:[131,150],label:'Phase 8 — final silence',                  phase:8},
+];
+
+function phaseForTurn(t) {
+  for (const p of PHASE_MAP) {
+    if (t >= p.turns[0] && t <= p.turns[1]) return p;
+  }
+  return {label:'Beyond sequence', phase:9};
+}
+
+function tsSet(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+async function fetchTeachingStatus() {
+  try {
+    const r = await fetch(API + '/portal/status');
+    if (!r.ok) return;
+    const d = await r.json();
+
+    const turn = d.turn ?? d.summary?.max_turn ?? 0;
+    const phase = phaseForTurn(turn);
+    const pct = Math.min(100, Math.round((turn / 150) * 100));
+
+    tsSet('ts-turn', turn);
+    tsSet('ts-phase-num', phase.phase);
+    tsSet('ts-phase-name', phase.label);
+    document.getElementById('ts-bar').style.width = pct + '%';
+    tsSet('ts-bar-label', 'T:' + turn + ' of 150 · ' + pct + '%');
+
+    const lm = d.last_metrics ?? {};
+    const se = d.summary?.entities ?? {};
+    const heardCount = ['A','B','C'].filter(k => (lm[k] ?? {}).heard_it === true).length;
+    tsSet('ts-heard', heardCount + ' / 3');
+
+    function fillEnt(key, pre) {
+      const s = se[key] ?? {};
+      const l = lm[key] ?? {};
+      tsSet(pre + '-delta', s.avg_delta != null ? Number(s.avg_delta).toFixed(4) : '—');
+      tsSet(pre + '-corr',  s.avg_inj_corr != null ? Number(s.avg_inj_corr).toFixed(4) : '—');
+      tsSet(pre + '-count', s.heard_count ?? '—');
+      const hEl = document.getElementById(pre + '-heard');
+      if (hEl) {
+        const heard = l.heard_it;
+        hEl.textContent = heard === true ? 'yes ✓' : heard === false ? 'no' : '—';
+        hEl.style.color = heard === true ? '#1D9E75' : '#444';
+      }
+    }
+    fillEnt('A','ts-a'); fillEnt('B','ts-b'); fillEnt('C','ts-c');
+
+    const injs = (d.summary?.injections ?? []).slice(-6).reverse();
+    const logEl = document.getElementById('ts-inj-log');
+    if (logEl) {
+      logEl.innerHTML = injs.map(i =>
+        `<div style="border-bottom:1px solid #111; padding:1px 0; display:flex; justify-content:space-between;"><span style="color:#333;">T:${i.turn}</span><span style="color:#e8e4dc;">${i.label}</span></div>`
+      ).join('') || '<div style="color:#333;">no injections yet</div>';
+    }
+
+    tsSet('ts-updated', 'updated ' + new Date().toLocaleTimeString('en-GB', {timeZone:'UTC', hour12:false}) + ' UTC');
+  } catch(e) { /* silent */ }
+}
+
+fetchTeachingStatus();
+setInterval(fetchTeachingStatus, 30000);
+
 </script>
 </body>
 </html>
