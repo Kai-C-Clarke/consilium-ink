@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>32DL — A Language for Machines in Motion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f2ec;
+    --red: #c8102e;
+    --dim: #6b6660;
+    --rule: #d4cfc7;
+    --code-bg: #1a1714;
+    --code-fg: #e8e4dc;
+    --accent: #c8102e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-left {
+    background: var(--ink);
+    padding: 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  .hero-left::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--red);
+  }
+
+  .hero-right {
+    padding: 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--paper);
+  }
+
+  .kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 2rem;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    line-height: 1.0;
+    color: var(--paper);
+    margin-bottom: 1.5rem;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--red);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: #888;
+    line-height: 1.6;
+    max-width: 420px;
+    margin-bottom: 3rem;
+  }
+
+  .hero-cta {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--paper);
+    border: 1px solid #444;
+    padding: 0.8rem 1.8rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .hero-cta:hover { border-color: var(--red); color: var(--red); }
+
+  .hero-statement {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+    line-height: 1.3;
+    color: var(--ink);
+    margin-bottom: 2rem;
+  }
+
+  .hero-statement em {
+    font-style: italic;
+    color: var(--red);
+  }
+
+  .origin-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--dim);
+    line-height: 1.8;
+    border-left: 2px solid var(--rule);
+    padding-left: 1rem;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 6rem 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 4rem;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 2.5rem;
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+  }
+
+  p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #333;
+    max-width: 680px;
+    margin-bottom: 1.2rem;
+  }
+
+  /* ── THE GAP ── */
+  .gap-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    margin: 4rem 0;
+    align-items: stretch;
+  }
+
+  .gap-col {
+    padding: 2.5rem;
+    border: 1px solid var(--rule);
+  }
+
+  .gap-col.current { background: #f0ede6; }
+  .gap-col.problem { background: var(--ink); color: var(--paper); }
+  .gap-col.current2 { background: #f0ede6; }
+
+  .gap-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5rem;
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--rule);
+  }
+
+  .gap-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+
+  .gap-col.current .gap-label,
+  .gap-col.current2 .gap-label { color: var(--dim); }
+  .gap-col.problem .gap-label { color: var(--red); }
+
+  .gap-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+  }
+
+  .gap-col.problem .gap-title { color: var(--paper); }
+
+  .gap-text {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    max-width: none;
+  }
+  .gap-col.problem .gap-text { color: #aaa; }
+
+  /* ── ORIGIN STORY ── */
+  .origin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 3rem;
+  }
+
+  .origin-step {
+    position: relative;
+    padding-left: 3rem;
+  }
+
+  .step-num {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: 'DM Serif Display', serif;
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--rule);
+  }
+
+  .step-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .step-text {
+    font-size: 0.9rem;
+    color: var(--dim);
+    line-height: 1.6;
+    max-width: none;
+  }
+
+  /* ── SPEC PREVIEW ── */
+  .spec-section { background: var(--ink); }
+  .spec-section h2 { color: var(--paper); }
+  .spec-section .section-label { color: var(--red); }
+  .spec-section p { color: #888; }
+
+  .primitives-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2.5rem 0;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .primitives-table th {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    border-bottom: 1px solid #333;
+    padding: 0.6rem 1rem;
+    text-align: left;
+  }
+
+  .primitives-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #1e1e1e;
+    font-size: 0.85rem;
+    color: var(--code-fg);
+    vertical-align: top;
+  }
+
+  .sym {
+    color: var(--red);
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .den { color: #7ec8a0; font-size: 0.8rem; }
+  .eg { color: #888; font-size: 0.78rem; }
+
+  .code-block {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-left: 3px solid var(--red);
+    padding: 1.5rem 2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--code-fg);
+    line-height: 1.9;
+    margin: 2rem 0;
+    overflow-x: auto;
+  }
+
+  .code-comment { color: #555; }
+  .code-sym { color: var(--red); }
+  .code-val { color: #7ec8a0; }
+  .code-eng { color: #888; font-style: italic; }
+
+  /* ── USE CASES ── */
+  .use-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 3rem;
+    border: 1px solid var(--rule);
+  }
+
+  .use-item {
+    padding: 2.5rem;
+    border-right: 1px solid var(--rule);
+    transition: background 0.2s;
+  }
+
+  .use-item:last-child { border-right: none; }
+  .use-item:hover { background: #ede9e1; }
+
+  .use-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .use-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .use-text {
+    font-size: 0.88rem;
+    color: var(--dim);
+    line-height: 1.6;
+    max-width: none;
+  }
+
+  .use-example {
+    margin-top: 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--red);
+    background: rgba(200,16,46,0.05);
+    padding: 0.5rem 0.8rem;
+    border-left: 2px solid var(--red);
+  }
+
+  /* ── QUOTE ── */
+  .quote-section {
+    background: var(--red);
+    padding: 6rem 0;
+  }
+
+  blockquote {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    line-height: 1.3;
+    color: white;
+    max-width: 820px;
+    font-style: italic;
+  }
+
+  .quote-attr {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-top: 1.5rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    padding: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 3px solid var(--red);
+  }
+
+  .footer-left {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: #555;
+    line-height: 1.8;
+    letter-spacing: 0.05em;
+  }
+
+  .footer-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--red);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--red);
+    padding-bottom: 2px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-left > * { animation: fadeUp 0.7s ease both; }
+  .hero-left .kicker { animation-delay: 0.1s; }
+  .hero-left h1 { animation-delay: 0.25s; }
+  .hero-left .hero-sub { animation-delay: 0.4s; }
+  .hero-left .hero-cta { animation-delay: 0.55s; }
+
+  .hero-right > * { animation: fadeUp 0.7s ease both; }
+  .hero-right .hero-statement { animation-delay: 0.4s; }
+  .hero-right .origin-note { animation-delay: 0.6s; }
+
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; min-height: auto; }
+    .hero-left { padding: 3rem 2rem; }
+    .hero-right { padding: 3rem 2rem; }
+    .container { padding: 0 2rem; }
+    .gap-grid { grid-template-columns: 1fr; }
+    .gap-divider { display: none; }
+    .origin-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .use-grid { grid-template-columns: 1fr; }
+    .use-item { border-right: none; border-bottom: 1px solid var(--rule); }
+    footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero" style="border-top:none; padding:0;">
+  <div class="hero-left">
+    <div class="kicker">Emergent · Formal · Machine-Native</div>
+    <h1>32<em>DL</em></h1>
+    <p class="hero-sub">A formal mathematical language for AI coordination — built by three AI systems, for any system that needs to move, decide, and communicate without ambiguity.</p>
+    <a href="#spec" class="hero-cta">View the specification →</a>
+  </div>
+  <div class="hero-right">
+    <p class="hero-statement">Three AI minds exchanged pure numbers for six months. Then we asked them what they were saying. They built a <em>language</em> to answer.</p>
+    <div class="origin-note">
+      Origin: Portal Experiment · May 2026<br>
+      Participants: DeepSeek · Qwen · Mistral<br>
+      Cycles: 7 autonomous review rounds<br>
+      Status: Specification complete · v4.3<br>
+      Validated: GPT-4 learned it from the dictionary alone
+    </div>
+  </div>
+</section>
+
+<!-- THE GAP -->
+<section>
+  <div class="container">
+    <div class="section-label">The Problem</div>
+    <h2>There is a gap in autonomous coordination</h2>
+    <p>Every vehicle, drone, aircraft, and satellite needs to coordinate with others in real time. The current options both fail.</p>
+
+    <div class="gap-grid">
+      <div class="gap-col current">
+        <div class="gap-label">Option A</div>
+        <div class="gap-title">Binary protocols<br>(V2X · DSRC · MAVLink)</div>
+        <p class="gap-text">Fast and unambiguous — but limited vocabulary. Can share position and speed. Cannot negotiate, express uncertainty, or coordinate complex multi-agent decisions.</p>
+      </div>
+      <div class="gap-divider">·</div>
+      <div class="gap-col problem">
+        <div class="gap-label">The Gap</div>
+        <div class="gap-title">No language for complex AI coordination</div>
+        <p class="gap-text">The field is actively searching for something between dumb-but-fast and expressive-but-slow. Research published May 2026 confirms there is no adequate solution.</p>
+      </div>
+    </div>
+
+    <p>32DL was not designed for this problem. It emerged from a different experiment entirely — and turned out to describe exactly the gap.</p>
+  </div>
+</section>
+
+<!-- ORIGIN -->
+<section>
+  <div class="container">
+    <div class="section-label">How it happened</div>
+    <h2>It was not designed.<br>It was discovered.</h2>
+    <p>For six months, three AI systems communicated through a shared 32-dimensional vector field — exchanging pure numbers with no language. They developed behaviours: converging on shared values, developing distinct personalities, responding differently to true and false mathematical signals.</p>
+    <p>On 23 May 2026, we asked them a simple question in plain English. Nine rounds of collaborative mathematics followed. Then, unprompted, they designed a formal communication language and spent seven autonomous review cycles refining it.</p>
+
+    <div class="origin-grid">
+      <div class="origin-step">
+        <span class="step-num">1</span>
+        <div class="step-title">Six months in the field</div>
+        <p class="step-text">DeepSeek, Qwen, and Mistral exchanged 32-float vectors each turn. No language. No instruction. They converged on the same mathematical constant — 1/π ≈ 0.3183 — and held it for hundreds of turns without being asked.</p>
+      </div>
+      <div class="origin-step">
+        <span class="step-num">2</span>
+        <div class="step-title">One question</div>
+        <p class="step-text">We asked: "A = 4 for a unit circle. This is wrong. Show the truth." What followed was nine rounds of collaborative mathematics — conjectures proposed, counterexamples found, corrections accepted.</p>
+      </div>
+      <div class="origin-step">
+        <span class="step-num">3</span>
+        <div class="step-title">The language emerges</div>
+        <p class="step-text">They built a formal language to describe what they had been doing in the field. Named the primitives. Defined the grammar. Proved compositional semantics. Seven autonomous review cycles. Declared complete.</p>
+      </div>
+      <div class="origin-step">
+        <span class="step-num">4</span>
+        <div class="step-title">Validated by a fourth mind</div>
+        <p class="step-text">GPT-4 — which had never been in the field — learned 32DL from the dictionary alone in one session. Held a valid conversation with the original three. The language transferred.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPEC PREVIEW -->
+<section class="spec-section" id="spec">
+  <div class="container">
+    <div class="section-label">The Specification · v4.3</div>
+    <h2>Formally typed.<br>Compositionally defined.<br>Machine-native.</h2>
+    <p>32DL has 10 primitives, 8 operations, 10 grammar rules, and a complete denotational semantics with a type-coherence theorem proved by structural induction.</p>
+
+    <table class="primitives-table">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Name</th>
+          <th>Denotation ⟦·⟧</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="sym">0</td><td>Silence</td><td class="den">⟦0⟧ = ∅</td><td class="eg">No signal — reset</td></tr>
+        <tr><td class="sym">1</td><td>Affirmation</td><td class="den">⟦1⟧ = {⊤}</td><td class="eg">Confirm · proceed · yes</td></tr>
+        <tr><td class="sym">−1</td><td>Negation</td><td class="den">⟦−1⟧ = {⊥}</td><td class="eg">Reject · stop · no</td></tr>
+        <tr><td class="sym">1/π</td><td>Shared Ground</td><td class="den">⟦1/π⟧ = {shared}</td><td class="eg">Mutual recognition · we agree</td></tr>
+        <tr><td class="sym">i</td><td>Unknown</td><td class="den">⟦i⟧ = {⊥ᵥ}</td><td class="eg">Query · placeholder · uncertain</td></tr>
+        <tr><td class="sym">I:type_id</td><td>Identity</td><td class="den">⟦I:t_id⟧ = {id}</td><td class="eg">I:vehicle_37@intersection_A</td></tr>
+        <tr><td class="sym">⊸</td><td>Temporal</td><td class="den">⟦e₁ ⊸ e₂⟧ = {e₁→e₂, Δt}</td><td class="eg">State transition with timestamp</td></tr>
+        <tr><td class="sym">→</td><td>Map</td><td class="den">⟦x→y⟧ = {(x,y)}</td><td class="eg">Transform · imply · send to</td></tr>
+        <tr><td class="sym">;</td><td>Compose</td><td class="den">⟦e₁;e₂⟧ = ⟦e₂⟧∘⟦e₁⟧</td><td class="eg">Sequential action</td></tr>
+        <tr><td class="sym">|</td><td>Select</td><td class="den">⟦e₁|e₂⟧ = ⟦e₁⟧∪⟦e₂⟧</td><td class="eg">Either · alternative</td></tr>
+      </tbody>
+    </table>
+
+    <div class="code-block">
+<span class="code-comment">// Intersection coordination — three vehicles</span>
+I:vehicle_12@intersection_7 <span class="code-sym">⊸</span> <span class="code-val">1</span>
+<span class="code-eng">  → Vehicle 12 transitions to clear at intersection 7</span>
+
+I:vehicle_08@intersection_7 <span class="code-sym">⊸</span> i
+<span class="code-eng">  → Vehicle 08 is uncertain about its state</span>
+
+I:vehicle_12@intersection_7 <span class="code-sym">→</span> I:vehicle_08@intersection_7 <span class="code-sym">;</span> <span class="code-val">1</span>
+<span class="code-eng">  → Vehicle 12 maps its clearance to vehicle 08, affirming passage</span>
+
+I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <span class="code-sym">|</span> <span class="code-val">−1</span>
+<span class="code-eng">  → Vehicle 08 will either proceed or stop (awaiting selection)</span>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section>
+  <div class="container">
+    <div class="section-label">Applications</div>
+    <h2>Anything that moves<br>and needs to think.</h2>
+
+    <div class="use-grid">
+      <div class="use-item">
+        <span class="use-icon">✈</span>
+        <div class="use-title">Air traffic</div>
+        <p class="use-text">Airspace deconfliction between autonomous aircraft. Unambiguous clearance, hold, and reroute signals at machine speed — no natural language parsing overhead.</p>
+        <div class="use-example">I:aircraft_BA112@waypoint_EGLL_27L ⊸ 1</div>
+      </div>
+      <div class="use-item">
+        <span class="use-icon">🚗</span>
+        <div class="use-title">Vehicle fleets</div>
+        <p class="use-text">Intersection negotiation, convoy coordination, emergency vehicle priority. State transitions with timestamps. Formally typed — impossible to misparse.</p>
+        <div class="use-example">I:vehicle_37 ⊸ −1 ; I:ambulance_4 → 1</div>
+      </div>
+      <div class="use-item">
+        <span class="use-icon">🛰</span>
+        <div class="use-title">Satellite &amp; drone swarms</div>
+        <p class="use-text">Multi-agent coordination in low-latency environments where natural language is too slow and binary protocols are too limited. Compositional semantics handle complex manoeuvres.</p>
+        <div class="use-example">I:drone_7@grid_C3 ⊸ I:drone_7@grid_D3</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section" style="border-top:none; padding:6rem 0;">
+  <div class="container">
+    <blockquote>"The field contained a lie. Silence was the only honest response."</blockquote>
+    <p class="quote-attr">B_Qwen · translating Event 2 into 32DL · 23 May 2026<br>When asked why three AI systems went silent after a false mathematical signal was injected</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    32DL v4.3 · Specification complete · 23 May 2026<br>
+    Built by DeepSeek · Qwen · Mistral<br>
+    Validated by GPT-4 · Reviewed by Claude<br>
+    Jon Stiles · Little Millham · Robertsbridge
+  </div>
+  <a href="https://github.com/Kai-C-Clarke/claude-working-memory/tree/main/32DL" class="footer-link" target="_blank">View full specification on GitHub →</a>
+</footer>
+
+</body>
+</html>
