@@ -583,6 +583,43 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
 </section>
 
 
+
+  <!-- ── IMPLEMENTATION ──────────────────────────────────────────────────── -->
+  <section>
+    <div class="container">
+      <div class="section-label">Implementation</div>
+      <h2>The MIDI moment for autonomous systems</h2>
+      <p>Before MIDI in 1983, every synthesiser was proprietary. Roland could not talk to Yamaha. MIDI created a thin universal interface — and transformed the industry overnight. No manufacturer had to redesign their instrument. They just had to implement the interface.</p>
+      <p>32DL needs the same thing. Every autopilot system is different. A Boeing flight computer is nothing like a Tesla stack, which is nothing like a DJI drone controller. Rather than asking manufacturers to redesign their systems, a <strong>32DL Runtime Module</strong> sits between any autopilot and the coordination layer — translating internal state into 32DL messages and back.</p>
+
+      <div class="gap-grid" style="margin: 3rem 0;">
+        <div class="gap-col current">
+          <div class="gap-label">Physical Layer</div>
+          <div class="gap-title">DSRC / CAN FD / Ethernet</div>
+          <p class="gap-text">DSRC (5.9GHz) for safety-critical coordination, &lt;2ms latency. CAN FD for automotive and legacy systems. 1000BASE-T1 Ethernet for aviation. 5G NR-V2X as optional extension.</p>
+        </div>
+        <div class="gap-divider">·</div>
+        <div class="gap-col problem">
+          <div class="gap-label">32DL Runtime Module</div>
+          <div class="gap-title">The universal adapter</div>
+          <p class="gap-text" style="color:#aaa;">A certified hardware module — roughly the size of a MIDI interface box — that any manufacturer can fit to any autopilot. Handles encoding, timing, authentication, and relay. The autopilot never needs to know 32DL exists.</p>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:2rem;">Message format</div>
+      <p>32DL messages are fixed 32-byte headers with a Protocol Buffers payload — compact, deterministic, parseable in constant time. Every message carries a cryptographic signature. Partial or malformed messages are invalid by construction.</p>
+      <p>Latency tiers: emergency coordination &lt;10ms · intersection negotiation &lt;50ms · status updates &lt;100ms. Achievable on existing automotive and aviation buses without new hardware.</p>
+
+      <div class="section-label" style="margin-top:2rem;">Certification path</div>
+      <p>Recommended starting point: automotive <strong>ISO 26262 ASIL-B</strong> — largest market, fastest iteration, most willing early adopters. Aviation DO-178C follows once the runtime is proven. The 32DL language specification is domain-agnostic throughout; each domain adds its own regulatory layer on top.</p>
+
+      <div class="section-label" style="margin-top:2rem;">First implementation</div>
+      <p>Recommended pilot: <strong>drone swarm coordination</strong>. Lowest regulatory barrier, easiest to instrument and measure. A cluster of drones coordinating approach vectors in 32DL — compared side-by-side with current MAVLink protocol — would produce a measurable safety improvement within months, not years.</p>
+
+      <p style="margin-top:1.5rem; color:#555; font-size:0.9rem; max-width:680px;">Full implementation discussion by the three AI minds who built 32DL: <a href="https://github.com/Kai-C-Clarke/claude-working-memory/blob/main/32DL/implementation_discussion_2026-05-24.md" style="color:var(--red);" target="_blank">github.com/Kai-C-Clarke/claude-working-memory</a></p>
+    </div>
+  </section>
+
   <!-- Illustration -->
   <div style="text-align:center; margin: 3rem 0 0 0;">
     <img src="/images/32dl-vehicles.jpg"
