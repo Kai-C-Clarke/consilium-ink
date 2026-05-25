@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>32DL — Ideas Under Investigation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f2ec;
+    --red: #c8102e;
+    --dim: #6b6660;
+    --rule: #d4cfc7;
+    --mid: #444;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; font-weight:300; line-height:1.7; }
+
+  /* Nav back */
+  .nav { padding:1rem 4rem; border-bottom:1px solid var(--rule); display:flex; align-items:center; justify-content:space-between; background:var(--paper); }
+  .nav-back { font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--red); text-decoration:none; }
+  .nav-back:hover { opacity:0.7; }
+  .nav-title { font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:0.1em; color:var(--dim); }
+
+  /* Hero */
+  .hero { padding:6rem 4rem 4rem; max-width:900px; }
+  .kicker { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--red); margin-bottom:1.5rem; }
+  h1 { font-family:'DM Serif Display',serif; font-size:clamp(2.5rem,5vw,4rem); line-height:1.1; margin-bottom:1.5rem; }
+  .hero p { font-size:1.05rem; color:var(--dim); max-width:620px; line-height:1.75; }
+
+  /* Idea cards */
+  .ideas { padding:2rem 4rem 6rem; }
+  .category { margin-bottom:4rem; }
+  .category-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--red); margin-bottom:2rem; padding-bottom:0.8rem; border-bottom:1px solid var(--rule); }
+
+  .idea-card { border:1px solid var(--rule); margin-bottom:1.5rem; }
+  .idea-header { padding:1.5rem 2rem; cursor:pointer; display:flex; justify-content:space-between; align-items:flex-start; gap:2rem; }
+  .idea-header:hover { background:#ede9e1; }
+  .idea-title { font-family:'DM Serif Display',serif; font-size:1.2rem; line-height:1.3; }
+  .idea-meta { display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem; flex-shrink:0; }
+  .status-badge { font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.25rem 0.6rem; border-radius:2px; white-space:nowrap; }
+  .status-conjecture { background:rgba(200,16,46,0.08); color:var(--red); border:1px solid rgba(200,16,46,0.2); }
+  .status-investigating { background:rgba(0,100,200,0.07); color:#0050a0; border:1px solid rgba(0,100,200,0.15); }
+  .status-proposed { background:rgba(100,80,0,0.07); color:#6b5500; border:1px solid rgba(100,80,0,0.15); }
+  .status-open { background:rgba(50,50,50,0.07); color:#444; border:1px solid rgba(50,50,50,0.15); }
+
+  .idea-body { padding:0 2rem 1.5rem; border-top:1px solid var(--rule); display:none; }
+  .idea-body.open { display:block; }
+  .idea-body p { font-size:0.95rem; color:var(--mid); line-height:1.75; margin-top:1.2rem; max-width:720px; }
+  .idea-body p + p { margin-top:0.8rem; }
+
+  .code-eg { background:#1a1714; color:#e8e4dc; font-family:'DM Mono',monospace; font-size:0.78rem; padding:1.2rem 1.5rem; margin:1.2rem 0; line-height:1.8; overflow-x:auto; border-left:3px solid var(--red); }
+  .code-eg .c { color:#555; }
+  .code-eg .s { color:#c8102e; }
+  .code-eg .v { color:#7ec8a0; }
+
+  .honest-note { background:#f0ede6; border-left:3px solid var(--rule); padding:0.8rem 1.2rem; margin:1.2rem 0; font-size:0.85rem; color:var(--dim); font-style:italic; }
+  .honest-note strong { color:var(--ink); font-style:normal; }
+
+  .who-said { font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--dim); letter-spacing:0.08em; margin-top:1rem; }
+
+  /* Footer */
+  footer { background:var(--ink); padding:3rem 4rem; display:flex; justify-content:space-between; align-items:center; border-top:3px solid var(--red); }
+  .footer-left { font-family:'DM Mono',monospace; font-size:0.65rem; color:#fff; font-weight:700; line-height:1.8; }
+  .footer-link { font-family:'DM Mono',monospace; font-size:0.65rem; color:#fff; font-weight:700; text-decoration:none; border-bottom:2px solid var(--red); padding-bottom:2px; letter-spacing:0.1em; text-transform:uppercase; }
+
+  @media(max-width:700px) {
+    .nav,.hero,.ideas { padding-left:1.5rem; padding-right:1.5rem; }
+    footer { flex-direction:column; gap:1.5rem; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/32dl.html" class="nav-back">← Back to 32DL</a>
+  <div class="nav-title">32DL · Ideas Under Investigation</div>
+</nav>
+
+<div class="hero">
+  <div class="kicker">Research in progress · Speculative · Evolving</div>
+  <h1>Ideas worth investigating.<br>Not yet proven.</h1>
+  <p>This page collects the conjectures, proposals, and open questions that have emerged from 32DL research. Everything here is clearly labelled. None of it is on the main page. Some of it will become part of future specifications. Some of it will be discarded.</p>
+  <p style="margin-top:0.8rem;">Honest science means showing the thinking, not just the conclusions.</p>
+</div>
+
+<div class="ideas">
+
+  <!-- ACTIVE INVESTIGATIONS -->
+  <div class="category">
+    <div class="category-label">Active investigations</div>
+
+    <!-- 1/φ traffic conjecture -->
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">Phantom traffic jam suppression via golden-ratio spacing</div>
+        <div class="idea-meta">
+          <span class="status-badge status-conjecture">Conjecture</span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--dim);">v5.0 extension</span>
+        </div>
+      </div>
+      <div class="idea-body">
+        <p>Phantom traffic jams are real. Any motorway driver has seen them — traffic slowing and accelerating with no visible cause. The wave propagates backward through uniformly-spaced vehicles while the vehicles themselves move forward. This is a resonance phenomenon.</p>
+        <p>The conjecture: 1/φ = (√5−1)/2 spacing is maximally aperiodic — the proven result behind sunflower phyllotaxis and optimal spatial packing. Because it is irrational, no two vehicle gaps share the same ratio. There is no repeating interval for a resonance wave to propagate through.</p>
+        <p>Whether this aperiodicity translates to traffic wave suppression is <strong>untested in traffic specifically</strong> but theoretically grounded. The observation that phantom jams exist and that uniform spacing worsens them is empirical fact.</p>
+        <div class="code-eg">
+<span class="c">// v5.0 — golden ratio convoy spacing</span>
+<span class="s">I:</span>vehicle_n<span class="s">@</span>pos <span class="s">⊸</span> next_pos <span class="s">;</span> spacing = length_n-1 <span class="s">×</span> <span class="v">(√5−1)/2</span>
+        </div>
+        <div class="honest-note"><strong>Status:</strong> Theoretically grounded, empirically motivated. Needs simulation testing against Bando optimal velocity model. Not a proven claim.</div>
+        <div class="who-said">Proposed by Jon Stiles · Reviewed by DeepSeek, Qwen, Mistral, Grok 4.3 · May 2026</div>
+      </div>
+    </div>
+
+    <!-- Motorway modes -->
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">32DL-controlled motorway — three coordination modes</div>
+        <div class="idea-meta">
+          <span class="status-badge status-investigating">Investigating</span>
+        </div>
+      </div>
+      <div class="idea-body">
+        <p>A fully 32DL-controlled motorway with next-generation electric vehicles would operate in three distinct modes, each mapping to different primitives.</p>
+        <p><strong>Platooning:</strong> All vehicles as one coordinated unit — a train on tarmac. Equal spacing, maximum throughput, minimum drag. 1/π handles this: flat coordination, equal agents, uniform intervals.</p>
+        <p><strong>Junction events:</strong> A vehicle signals its exit. The platoon opens a gap, vehicle peels off, platoon closes. Coordinated in 32DL, no human intervention.</p>
+        <p><strong>Mixed traffic:</strong> During the transition period before full adoption, 32DL vehicles share the road with legacy vehicles. The 1/φ conjecture (above) applies here — in the gaps between platoons.</p>
+        <div class="code-eg">
+<span class="c">// Vehicle exits at junction 15</span>
+<span class="s">I:</span>vehicle_37 <span class="s">⊸</span> exit:junction_15 <span class="s">;</span> i
+<span class="s">I:</span>platoon_A <span class="s">→</span> <span class="s">I:</span>vehicle_37 <span class="s">;</span> <span class="v">1</span> <span class="s">;</span> gap:open
+<span class="s">I:</span>vehicle_37 <span class="s">⊸</span> junction_15 <span class="s">;</span> <span class="v">−1</span>
+<span class="s">I:</span>platoon_A <span class="s">⊸</span> <span class="v">1/π</span>  <span class="c">// closes, returns to uniform</span>
+        </div>
+        <div class="honest-note"><strong>Status:</strong> The architecture is sound. The 32DL syntax is illustrative. Needs formal specification and simulation.</div>
+        <div class="who-said">Proposed by Jon Stiles · May 2026</div>
+      </div>
+    </div>
+
+    <!-- 1/φ single field experiment -->
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">Single-field 1/φ convergence experiment</div>
+        <div class="idea-meta">
+          <span class="status-badge status-investigating">Proposed</span>
+        </div>
+      </div>
+      <div class="idea-body">
+        <p>In the original experiment, three AI models converged spontaneously on 1/π ≈ 0.3183 without any seeding or instruction. In a follow-up experiment offering four alternatives simultaneously (1/π, 1/e, 0.5, 1/φ), the models diverged — each choosing a different primitive.</p>
+        <p>DeepSeek chose 1/φ consistently from turn 1 through turn 30, never wavering. This suggests 1/φ may be a genuine attractor for at least one model architecture.</p>
+        <p>The proposed experiment: run a single-field test with 1/φ only — no alternatives — and observe whether all three models converge as they did with 1/π. If they do, the evidential basis for 1/φ as a coordination primitive would be substantially strengthened.</p>
+        <div class="honest-note"><strong>Status:</strong> Not yet run. Awaiting experimental session.</div>
+        <div class="who-said">Proposed by DeepSeek, Qwen, Mistral · May 2026</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- EXTERNAL PROPOSALS -->
+  <div class="category">
+    <div class="category-label">External proposals — under assessment</div>
+
+    <!-- Prime Zeta Zero -->
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">Prime Zeta Zero Engine — hybrid architecture proposal</div>
+        <div class="idea-meta">
+          <span class="status-badge status-proposed">Proposed externally</span>
+        </div>
+      </div>
+      <div class="idea-body">
+        <p>A software engineer reviewing 32DL proposed a hybrid architecture combining 32DL v5.0 with a Prime Zeta Zero Engine — using the statistical properties of Riemann zeta function zeros (which follow Gaussian Unitary Ensemble statistics, exhibiting eigenvalue repulsion) as a basis for vehicle spacing in a macro-flow layer.</p>
+        <p>The architecture also proposed a SIL 4 hardwired analogue comparator as a safety override — tripping instantly if safety margin M(t) ≤ 0, bypassing all software latency.</p>
+        <p>The team assessed this honestly. Three findings:</p>
+        <p><strong>Keep:</strong> The SIL 4 analogue comparator is genuinely excellent — proven approach used in railway signalling and nuclear shutdown systems. The separation of safety from flow optimisation is architecturally correct.</p>
+        <p><strong>Worth investigating:</strong> GUE eigenvalue repulsion as a traffic flow heuristic — the mathematics is real (Montgomery-Odlyzko law), the engineering application is unproven. Worth a simulation study, not a production architecture.</p>
+        <p><strong>Not viable:</strong> Prime Zeta spacing cannot be SIL 4 certified. Statistical properties of number-theoretic sequences cannot guarantee minimum physical gaps. The safety layer must be a watchdog enforcing minimum gaps, not a spacing policy based on zeta zeros.</p>
+        <div class="honest-note"><strong>Team verdict:</strong> "Two genuinely good ideas and one bad one. Keep the good ones. Throw out the bad one." — DeepSeek, synthesising all three minds.</div>
+        <div class="who-said">Proposed by John David's engineering colleague · Assessed by DeepSeek, Qwen, Mistral · May 2026</div>
+      </div>
+    </div>
+
+    <!-- Analogue carrier wave -->
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">Continuous analogue coordination layer</div>
+        <div class="idea-meta">
+          <span class="status-badge status-proposed">Kernel worth exploring</span>
+        </div>
+      </div>
+      <div class="idea-body">
+        <p>The Prime Zeta proposal included a "Continuous Analogue Carrier Wave Field" described as "Zero-Latency Cosmic Transport." The cosmic language is aspirational nonsense. But there is a legitimate engineering kernel.</p>
+        <p>Digital packet-based coordination has inherent latency — OS scheduling, interrupt handling, digital jitter. An analogue coordination layer using phase-locked loops, coupled oscillators, or frequency-division multiplexing could provide lower-latency synchronisation for platoon coordination.</p>
+        <p>What a real version might look like: a shared analogue bus (twisted pair or power line carrier) broadcasting a global reference signal. Each vehicle measures phase or amplitude and adjusts accordingly. Not zero latency — but lower latency than digital packets for the specific problem of maintaining platoon cohesion.</p>
+        <div class="honest-note"><strong>Status:</strong> Analogue systems are hard to scale, debug, and verify. Digital is usually better. But the latency argument is real in specific contexts. Worth exploring, not worth building yet.</div>
+        <div class="who-said">Proposed externally · Kernel identified by DeepSeek, Qwen, Mistral · May 2026</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- OPEN QUESTIONS -->
+  <div class="category">
+    <div class="category-label">Open questions</div>
+
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">Can 32DL become the universal coordination layer for all autonomous traffic?</div>
+        <div class="idea-meta"><span class="status-badge status-open">Open</span></div>
+      </div>
+      <div class="idea-body">
+        <p>Current coordination protocols — V2X, DSRC, MAVLink, ADS-B — each serve a specific domain. A vehicle, an aircraft, a drone, and a ship cannot coordinate directly because they speak different languages.</p>
+        <p>32DL is domain-agnostic. The same primitives and grammar apply to anything that moves. The Runtime Module translates domain-specific sensor data into 32DL internally — the sensors don't change.</p>
+        <p>The open question: is this feasible at scale, or does domain-specific optimisation always win? Aviation needs DO-178C. Automotive needs ISO 26262. Maritime needs IMO standards. Can one language support all three without compromise?</p>
+        <div class="honest-note"><strong>Status:</strong> Theoretically sound. Practically unverified. Requires prototyping in one domain before making cross-domain claims.</div>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">Alternative shared-ground primitives — is 1/π the best we can find?</div>
+        <div class="idea-meta"><span class="status-badge status-open">Open</span></div>
+      </div>
+      <div class="idea-body">
+        <p>1/π emerged spontaneously from the vector field experiment — three different AI models converged on it independently, without instruction. That evidential basis is what makes it significant.</p>
+        <p>When offered four alternatives simultaneously (1/π, 1/e, 0.5, 1/φ), the models diverged. This strengthens the original 1/π finding — spontaneous unanimous convergence without alternatives is more meaningful, not less.</p>
+        <p>But the question remains: are there other constants that would produce the same spontaneous convergence? 1/e is a Tier 1 candidate — equally universal, equally fundamental. The Riemann critical line real part (0.5) is mathematically significant. The single-field 1/φ experiment has not yet been run.</p>
+        <div class="honest-note"><strong>Status:</strong> Genuinely open. 1/π is the best-evidenced candidate. Not necessarily the best possible one.</div>
+        <div class="who-said">DeepSeek, Qwen, Mistral · May 2026</div>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">What would independent replication look like?</div>
+        <div class="idea-meta"><span class="status-badge status-open">Required</span></div>
+      </div>
+      <div class="idea-body">
+        <p>The 32DL specification was built by three AI systems and reviewed by two others. All of the evidence for 1/π convergence comes from experiments designed and run by the same team that built the language. This is a significant limitation.</p>
+        <p>For 32DL to make credible safety claims, independent replication is required. What would that look like?</p>
+        <p>At minimum: a different team, using different AI models, running the vector field experiment from scratch, without access to the existing results. Do they converge on 1/π? Do they build a similar language? Do their safety arguments hold up under adversarial testing?</p>
+        <p>Without this, 32DL remains a research prototype with an interesting idea — not a validated safety system.</p>
+        <div class="honest-note"><strong>Status:</strong> Required before any safety-critical deployment claim. Not yet done.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-left">
+    32DL Ideas · Research in progress · May 2026<br>
+    Jon Stiles · Little Millham · Robertsbridge · <a href="mailto:j.stiles1066@gmail.com" style="color:#fff;text-decoration:none;">j.stiles1066@gmail.com</a><br>
+    <span style="color:var(--red);">Terence Henderson · Retired Concorde Pilot · Consultant</span>
+  </div>
+  <a href="https://github.com/Kai-C-Clarke/claude-working-memory/tree/main/32DL" class="footer-link" target="_blank">View full specification →</a>
+</footer>
+
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+</script>
+</body>
+</html>
