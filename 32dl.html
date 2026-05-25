@@ -515,6 +515,36 @@ swarm(100) <span class="code-sym">&#x22B8;</span> swarm(61) <span class="code-sy
 <span class="code-comment">// Each level = &lfloor;parent &times; (&radic;5&minus;1)/2&rfloor; &mdash; self-similar, no fractional drift</span>
       </div>
 
+
+      <div class="section-label" style="margin-top:2rem;">The fully autonomous motorway</div>
+      <p>A completely 32DL-controlled motorway with next-generation electric vehicles runs as a single coordinated unit — a train on tarmac. Every vehicle locked to the same velocity, equal spacing, maximum throughput, minimum drag. This is where 1/&pi; is optimal: flat coordination, equal agents, uniform intervals.</p>
+
+      <div style="margin:1.5rem 0; display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; border:1px solid #1a1a1a; font-size:0.8rem;">
+        <div style="padding:1.2rem; border-right:1px solid #1a1a1a;">
+          <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:rgba(0,229,255,0.4); margin-bottom:0.5rem;">PLATOONING</div>
+          <div style="color:var(--paper); font-weight:600; margin-bottom:0.4rem;">1/&pi; — Single unit</div>
+          <p style="color:#555; font-size:0.8rem; max-width:none;">Equal spacing, maximum flow, one rigid body. The motorway as a train.</p>
+        </div>
+        <div style="padding:1.2rem; border-right:1px solid #1a1a1a;">
+          <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:rgba(0,229,255,0.4); margin-bottom:0.5rem;">JUNCTION EVENTS</div>
+          <div style="color:var(--paper); font-weight:600; margin-bottom:0.4rem;">Gap primitives</div>
+          <p style="color:#555; font-size:0.8rem; max-width:none;">Vehicle signals exit. Platoon opens gap, vehicle peels off, platoon closes. Coordinated in 32DL with no human intervention.</p>
+        </div>
+        <div style="padding:1.2rem;">
+          <div style="font-family:'Space Mono',monospace; font-size:0.6rem; color:rgba(200,16,46,0.5); margin-bottom:0.5rem;">MIXED TRAFFIC</div>
+          <div style="color:var(--paper); font-weight:600; margin-bottom:0.4rem;">1/&phi; — Transition period</div>
+          <p style="color:#555; font-size:0.8rem; max-width:none;">Before full adoption, not every vehicle speaks 32DL. Golden-ratio spacing in the gaps may suppress resonance waves. Conjecture.</p>
+        </div>
+      </div>
+
+      <div class="code-block" style="margin:1rem 0; font-size:0.72rem;">
+<span class="code-comment">// Vehicle 37 exits at junction 15</span>
+<span class="code-sym">I:</span>vehicle_37 <span class="code-sym">&#x22B8;</span> exit:junction_15 <span class="code-sym">;</span> i
+<span class="code-sym">I:</span>platoon_A <span class="code-sym">&rarr;</span> <span class="code-sym">I:</span>vehicle_37 <span class="code-sym">;</span> <span class="code-val">1</span> <span class="code-sym">;</span> gap:open
+<span class="code-sym">I:</span>vehicle_37 <span class="code-sym">&#x22B8;</span> junction_15 <span class="code-sym">;</span> <span class="code-val">&minus;1</span>
+<span class="code-sym">I:</span>platoon_A <span class="code-sym">&#x22B8;</span> <span class="code-val">1/&pi;</span>  <span class="code-comment">// platoon closes, returns to uniform</span>
+      </div>
+
       <div class="section-label" style="margin-top:2rem;">Version history</div>
       <div style="font-family:'Space Mono',monospace; font-size:0.65rem; color:#2a2a2a; line-height:2.2; border-left:2px solid #1a1a1a; padding-left:1.2rem; margin-top:0.8rem;">
         <span style="color:#444;">v4.3</span> &nbsp;&middot;&nbsp; Specification complete &nbsp;&middot;&nbsp; Compositional semantics &nbsp;&middot;&nbsp; 3/3 approved<br>
