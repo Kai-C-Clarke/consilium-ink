@@ -639,6 +639,52 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
     </div>
   </section>
 
+
+  <!-- ── SENSOR FUSION ────────────────────────────────────────────────────── -->
+  <section>
+    <div class="container">
+      <div class="section-label">Non-32DL Threat Avoidance</div>
+      <h2>32DL doesn't need the threat<br>to speak its language</h2>
+      <p>In any real deployment, not every object will be transmitting 32DL — or anything at all. Birds, rogue drones, legacy aircraft, debris, weather. A coordination language that only works when every party is cooperating is not a safety system.</p>
+      <p>32DL v4.5 addresses this directly. The Runtime Module interfaces with the vehicle's existing sensor systems — radar, lidar, ADS-B, cameras — and translates all sensor data into 32DL internally. The sensors don't change. The autopilot doesn't change. 32DL becomes the shared language that sits between them.</p>
+
+      <div class="gap-grid" style="margin: 3rem 0;">
+        <div class="gap-col current">
+          <div class="gap-label">Existing sensors unchanged</div>
+          <div class="gap-title">Radar · Lidar · ADS-B · Camera</div>
+          <p class="gap-text">All existing detection systems feed into the 32DL Runtime Module unchanged. No new hardware required. No recertification of existing sensors.</p>
+        </div>
+        <div class="gap-divider">→</div>
+        <div class="gap-col problem">
+          <div class="gap-label">32DL Runtime Module</div>
+          <div class="gap-title">Translates everything into one language</div>
+          <p class="gap-text" style="color:#aaa;">Every detected object — whether transmitting or silent — becomes a 32DL term. All 32DL agents in range share the same picture instantly.</p>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:2rem;">The S: primitive — Silent Contact</div>
+      <p>A new primitive distinguishes objects that cannot or will not communicate. Where <code style="color:var(--red);">I:unknown</code> means identity unknown but could be communicating, <code style="color:var(--red);">S:</code> means <em>ontologically silent</em> — bird, debris, rogue drone, weather.</p>
+
+      <div class="code-block" style="margin: 1.5rem 0;">
+<span class="code-comment">// Bird detected by radar — not transmitting anything</span>
+<span class="code-sym">S:</span>fauna@<span class="code-val">51.5074N_0.1278W_500ft</span> <span class="code-sym">⊸</span> vector(270,15,0)
+
+<span class="code-comment">// Rogue drone detected by lidar</span>
+<span class="code-sym">S:</span>rogue_drone@<span class="code-val">51.5074N_0.1278W_200ft</span> <span class="code-sym">⊸</span> vector(90,15,0)
+
+<span class="code-comment">// Legacy aircraft on ADS-B only — not transmitting 32DL</span>
+<span class="code-sym">I:</span>aircraft@icao:A1B2C3{legacy_adsb} <span class="code-sym">⊸</span> <span class="code-val">51.51N_0.12W_10000ft</span>
+
+<span class="code-comment">// Agent A warns Agent B — rogue drone, take avoiding action</span>
+<span class="code-sym">I:</span>aircraft_A <span class="code-sym">→</span> <span class="code-sym">I:</span>aircraft_B <span class="code-sym">;</span> <span class="code-sym">S:</span>rogue_drone@<span class="code-val">51.5074N_0.1278W_200ft</span> <span class="code-sym">⊸</span> avoid
+      </div>
+
+      <div class="section-label" style="margin-top:2rem;">32DL and TCAS</div>
+      <p>TCAS — the Traffic Collision Avoidance System fitted to all commercial aircraft — handles aircraft with transponders. It cannot coordinate around objects that are not transmitting. 32DL sits alongside TCAS initially, adding what TCAS cannot do: coordinating around anything a sensor can detect, regardless of whether it is transmitting.</p>
+      <p style="font-style:italic; color:#555; margin-top:1rem;">"Wow." — Terence Henderson, Retired Concorde Pilot, on first seeing the simulation.</p>
+    </div>
+  </section>
+
   <!-- Illustration -->
   <div style="text-align:center; margin: 3rem 0 0 0;">
     <img src="/images/32dl-vehicles.jpg"
