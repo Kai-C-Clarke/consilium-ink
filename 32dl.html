@@ -474,7 +474,7 @@
       Origin: Portal Experiment · May 2026<br>
       Participants: DeepSeek · Qwen · Mistral<br>
       Cycles: 7 autonomous review rounds<br>
-      Status: Specification complete · v4.3<br>
+      Status: Specification complete · v4.5<br>
       Validated: GPT-4 learned it from the dictionary alone
     </div>
   </div>
@@ -541,7 +541,7 @@
 <!-- SPEC PREVIEW -->
 <section class="spec-section" id="spec">
   <div class="container">
-    <div class="section-label">The Specification · v4.3</div>
+    <div class="section-label">The Specification · v4.5</div>
     <h2>Formally typed.<br>Compositionally defined.<br>Machine-native.</h2>
     <p>32DL has 10 primitives, 8 operations, 10 grammar rules, and a complete denotational semantics with a type-coherence theorem proved by structural induction.</p>
 
@@ -626,7 +626,7 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
         <p style="font-family:'Space Mono',monospace; font-size:1.8rem; font-weight:700; color:#00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.4); margin-bottom:0.5rem;">
           Wave 100 &nbsp;·&nbsp; 2,649 intercepts &nbsp;·&nbsp; 0 missed &nbsp;·&nbsp; 0 errors
         </p>
-        <p style="color:#555; font-size:0.9rem; margin-bottom: 1.5rem;">Fully autonomous · 28 simultaneous objects · 360° · all altitudes · 32DL v4.4 · ran continuously until stopped</p>
+        <p style="color:#555; font-size:0.9rem; margin-bottom: 1.5rem;">Fully autonomous · 28 simultaneous objects · 360° · all altitudes · 32DL v4.5 · ran continuously until stopped</p>
         <img src="/images/32dl-wave100.png"
              alt="Wave 100 — 2649 intercepts, 0 missed, 0 errors"
              style="max-width:100%; border-radius:4px; border: 1px solid rgba(0,255,136,0.2);">
@@ -716,7 +716,7 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
 <!-- FOOTER -->
 <footer>
   <div class="footer-left">
-    32DL v4.4 · Specification complete · 24 May 2026<br>
+    32DL v4.5 · Specification complete · 24 May 2026<br>
     Built by DeepSeek · Qwen · Mistral<br>
     Validated by GPT-4 · Reviewed by Claude<br>
     Jon Stiles · Little Millham · Robertsbridge · <a href="mailto:j.stiles1066@gmail.com" style="color:#ffffff;text-decoration:none;">j.stiles1066@gmail.com</a><br>
@@ -806,7 +806,7 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
           <div class="schud" id="sCoordHud">
             INTERCEPTOR · ORIGIN 0.0000N 0.0000E 0ft<br>
             DEFENCE RADIUS · 360° · ALL ALTITUDES<br>
-            PROTOCOL · 32DL v4.4 · GPS-READY
+            PROTOCOL · 32DL v4.5 · GPS-READY
           </div>
           <div class="sthreat" id="sThreat"></div>
           <div class="swavbanner" id="sWavBanner"></div>
@@ -833,7 +833,7 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
       </div>
 
       <div class="sfooter">
-        <span>32DL v4.4 · GPS-Ready · Satellite Relay</span>
+        <span>32DL v4.5 · GPS-Ready · Satellite Relay</span>
         <button class="sfbtn" id="sResetBtn">RESET</button>
         <span style="color:rgba(0,229,255,0.2);font-size:0.5rem;">Terence Henderson · Consultant</span>
       </div>
@@ -1009,7 +1009,7 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
         document.getElementById('sActive').textContent=invaders.length;
         const tn=invaders.length;
         document.getElementById('sThreat').textContent=tn>0?'TRACKING '+tn+' THREAT'+(tn>1?'S':''):'';
-        document.getElementById('sCoordHud').innerHTML='INTERCEPTOR · ORIGIN 0.0000N 0.0000E 0ft<br>DEFENCE RADIUS · 360° · ALL ALTITUDES<br>WAVE '+wave+' · 32DL v4.4';
+        document.getElementById('sCoordHud').innerHTML='INTERCEPTOR · ORIGIN 0.0000N 0.0000E 0ft<br>DEFENCE RADIUS · 360° · ALL ALTITUDES<br>WAVE '+wave+' · 32DL v4.5';
       }
 
       function renderScene(ts){
@@ -1046,7 +1046,7 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
         document.getElementById('sStartScreen').style.display='none';
         running=true;
         document.getElementById('sWave').textContent=wave;
-        slog('sys','SYSTEM','32DL INTERCEPT PROTOCOL v4.4 ONLINE');
+        slog('sys','SYSTEM','32DL INTERCEPT PROTOCOL v4.5 ONLINE');
         slog('sys','SYSTEM','R:sat_relay@GEO ACTIVE · SATELLITE RELAY ONLINE');
         slog('sys','SYSTEM','WAVE 1 — 5 OBJECTS · ALL VECTORS · ALL ALTITUDES');
         nextSpawn=800;
