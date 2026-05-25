@@ -92,6 +92,37 @@
   <div class="category">
     <div class="category-label">Active investigations</div>
 
+
+    <!-- Predictive monitoring -->
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">Predictive monitoring — reading intent before it is announced</div>
+        <div class="idea-meta">
+          <span class="status-badge status-investigating">High potential</span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--dim);">Proposed v5.1</span>
+        </div>
+      </div>
+      <div class="idea-body">
+        <p>An experienced driver knows a car in front is going to turn before it indicates. They read lateral positioning — a drift toward the edge. Speed profile — subtle deceleration before commitment. The line through a corner. Micro-pauses in acceleration. This is behavioural prediction: reading intent from pattern, not signal.</p>
+        <p>Current coordination protocols — including 32DL — are entirely reactive. They respond to what a vehicle announces it is doing. A vehicle indicates, then others react. This proposal adds a predictive layer: a 32DL agent broadcasts its prediction of another agent's intent based on observed behaviour, before that agent has announced anything.</p>
+        <div class="code-eg">
+<span class="c">// Proposed P: primitive — predictive intent</span>
+<span class="s">P:</span>vehicle_37{confidence:0.82} <span class="s">⊸</span> exit:junction_15
+<span class="c">// "Based on observed behaviour I predict vehicle_37</span>
+<span class="c">//  will exit at junction 15 with 82% confidence"</span>
+
+<span class="c">// Team recommendation: keep coordination layer clean</span>
+<span class="c">// Build prediction into S: (sensor/perception) layer instead</span>
+<span class="s">S:</span>vehicle_37{lateral_drift:0.3m, decel:2.1m/s, yaw:0.04rad} <span class="s">⊸</span> behaviour:hesitating
+<span class="c">// When confidence hits threshold → broadcast I: commitment</span>
+        </div>
+        <p>The team assessed this honestly. The concept is real and valuable — human drivers do this, machines should too. But adding P: directly to the coordination layer creates a conflict between belief and commitment. 32DL currently only handles commitments. Mixing probabilistic belief with deontic commitment creates ambiguity about what any statement actually does.</p>
+        <p>The more immediate failure risk is cascading belief errors. If Agent A predicts B will exit, and C acts on A's prediction, and D acts on C's action — a chain of second-hand beliefs with no grounding in reality, and no mechanism in 32DL to track confidence decay through hops.</p>
+        <div class="honest-note"><strong>Team recommendation:</strong> Add behavioural features to the S: (perception) layer. When prediction confidence exceeds a deployer-defined threshold — say 95% — broadcast an I: commitment. Keep the coordination layer clean. The prediction happens in the perception layer where it belongs. A formal P: primitive can be specified for v5.1 once confidence calibration standards are established.</div>
+        <div class="who-said">Proposed by Jon Stiles · Assessed by DeepSeek, Qwen, Mistral · 25 May 2026</div>
+      </div>
+    </div>
+
     <!-- 1/φ traffic conjecture -->
     <div class="idea-card">
       <div class="idea-header" onclick="toggle(this)">
