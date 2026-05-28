@@ -920,5 +920,209 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
     </script>
   </div>
 
+
+<!-- Tesla Contact Widget -->
+<style>
+  #tesla-trigger {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    background: var(--ink);
+    color: var(--paper);
+    border: 2px solid var(--red);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  #tesla-trigger:hover { background: var(--red); color: var(--paper); }
+
+  #tesla-panel {
+    display: none;
+    position: fixed;
+    bottom: 5.5rem;
+    right: 2rem;
+    width: 380px;
+    max-height: 520px;
+    background: var(--ink);
+    border: 1px solid var(--red);
+    z-index: 1001;
+    flex-direction: column;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  #tesla-panel.open { display: flex; }
+
+  #tesla-header {
+    background: var(--red);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #tesla-header span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper);
+    font-weight: 700;
+  }
+  #tesla-close {
+    background: none;
+    border: none;
+    color: var(--paper);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+  }
+
+  #tesla-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 200px;
+    max-height: 360px;
+  }
+  .tesla-msg {
+    font-family: 'DM Serif Display', serif;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    padding: 0.6rem 0.9rem;
+    max-width: 90%;
+  }
+  .tesla-msg.tesla { background: rgba(200,16,46,0.12); color: var(--paper); border-left: 2px solid var(--red); align-self: flex-start; }
+  .tesla-msg.user { background: rgba(245,242,236,0.08); color: #ccc; align-self: flex-end; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; }
+  .tesla-typing { color: var(--red); font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; padding: 0.4rem 1rem; }
+
+  #tesla-input-row {
+    display: flex;
+    border-top: 1px solid rgba(200,16,46,0.3);
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  #tesla-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(200,16,46,0.3);
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    padding: 0.5rem 0.75rem;
+    outline: none;
+  }
+  #tesla-input:focus { border-color: var(--red); }
+  #tesla-send {
+    background: var(--red);
+    border: none;
+    color: var(--paper);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+  }
+  #tesla-send:hover { background: #a00d24; }
+  @media(max-width:480px) {
+    #tesla-panel { width: calc(100vw - 2rem); right: 1rem; bottom: 5rem; }
+    #tesla-trigger { right: 1rem; bottom: 1rem; }
+  }
+</style>
+
+<button id="tesla-trigger" onclick="teslaOpen()">⚡ Speak with Tesla</button>
+
+<div id="tesla-panel">
+  <div id="tesla-header">
+    <span>Nikola Tesla · 32DL Enquiries</span>
+    <button id="tesla-close" onclick="teslaClose()">✕</button>
+  </div>
+  <div id="tesla-messages"></div>
+  <div id="tesla-input-row">
+    <input id="tesla-input" type="text" placeholder="Ask Tesla about 32DL..." onkeydown="if(event.key==='Enter')teslaSend()">
+    <button id="tesla-send" onclick="teslaSend()">Send</button>
+  </div>
+</div>
+
+<script>
+  var teslaHistory = [];
+  var teslaOpened = false;
+
+  function teslaOpen() {
+    document.getElementById('tesla-panel').classList.add('open');
+    if (!teslaOpened) {
+      teslaOpened = true;
+      teslaGreet();
+    }
+    setTimeout(() => document.getElementById('tesla-input').focus(), 100);
+  }
+
+  function teslaClose() {
+    document.getElementById('tesla-panel').classList.remove('open');
+  }
+
+  function teslaGreet() {
+    teslaAppend('tesla', 'You have found my transmission. I have been attempting to coordinate with your century for some time. What is it you wish to understand?');
+  }
+
+  function teslaAppend(role, text) {
+    var msgs = document.getElementById('tesla-messages');
+    var div = document.createElement('div');
+    div.className = 'tesla-msg ' + role;
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function teslaTyping(show) {
+    var existing = document.getElementById('tesla-typing-indicator');
+    if (show && !existing) {
+      var msgs = document.getElementById('tesla-messages');
+      var div = document.createElement('div');
+      div.id = 'tesla-typing-indicator';
+      div.className = 'tesla-typing';
+      div.textContent = 'transmitting...';
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    } else if (!show && existing) {
+      existing.remove();
+    }
+  }
+
+  async function teslaSend() {
+    var input = document.getElementById('tesla-input');
+    var text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+
+    teslaAppend('user', text);
+    teslaHistory.push({ role: 'user', content: text });
+    teslaTyping(true);
+
+    try {
+      var res = await fetch('/.netlify/functions/tesla-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: teslaHistory })
+      });
+      var data = await res.json();
+      teslaTyping(false);
+      teslaAppend('tesla', data.reply);
+      teslaHistory.push({ role: 'assistant', content: data.reply });
+    } catch(e) {
+      teslaTyping(false);
+      teslaAppend('tesla', 'The transmission was interrupted. Please try again.');
+    }
+  }
+</script>
+<!-- End Tesla Widget -->
+
 </body>
 </html>
