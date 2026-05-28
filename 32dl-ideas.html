@@ -287,6 +287,79 @@
 
   </div>
 
+  <div class="section">
+    <div class="category-label">Wire Format — v2.0 (Multi-model reviewed)</div>
+
+    <div class="idea-card">
+      <div class="idea-header " onclick="toggle(this)">
+        <div class="idea-title">Wire Format Specification v2.0 — Byte encoding for 32DL on the wire</div>
+        <div class="idea-meta"><span class="status-badge status-investigating">Reviewed Draft</span></div>
+      </div>
+      <div class="idea-body">
+        <p>32DL currently exists as a formal specification — sheet music, not a radio signal. For two vehicles to speak 32DL over a network, a wire format is required: a standardised sequence of bytes that encodes each primitive, identity, and composition. This section documents the wire format as reviewed by a three-model panel (DeepSeek as architect, Grok as hostile reviewer, Mistral as arbitrator).</p>
+
+        <p><strong>What Grok accepted:</strong> BNF grammar with explicit precedence, complete byte tag table, length-prefix framing, CRC32 checksum, temporal operators (duration/timeout), versioning byte, extension point ranges, deterministic error model with mandatory NACK, transport-agnostic stance.</p>
+
+        <h4 style="margin:1.5rem 0 0.75rem; font-family:'DM Mono',monospace; font-size:0.85rem; letter-spacing:0.05em;">Byte Tag Table</h4>
+        <table style="width:100%; border-collapse:collapse; font-family:'DM Mono',monospace; font-size:0.75rem; margin-bottom:1.5rem;">
+          <thead><tr style="border-bottom:2px solid var(--red);">
+            <th style="text-align:left; padding:0.4rem 0.8rem;">Tag</th>
+            <th style="text-align:left; padding:0.4rem 0.8rem;">Primitive</th>
+            <th style="text-align:left; padding:0.4rem 0.8rem;">Meaning</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:0.3rem 0.8rem;">0x00</td><td>0</td><td>Silence / no-op</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x01</td><td>1</td><td>Affirm / true</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x02</td><td>-1</td><td>Negate / false</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x03</td><td>1/π</td><td>Shared ground (probabilistic threshold)</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x04</td><td>h0</td><td>Hierarchy level 0 (top coordinator)</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x05</td><td>i</td><td>Unknown / pending</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x06</td><td>temporal</td><td>Temporal operator</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x07</td><td>map</td><td>Function application</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x08</td><td>compose</td><td>Sequential composition</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x09</td><td>select</td><td>Conditional choice</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x0A</td><td>duration</td><td>Time interval binding — expr + 2-byte ms</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x0B</td><td>timeout</td><td>Abort if not completed — expr + 2-byte ms</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0x0C</td><td>revoked</td><td>Identity revocation — UUID + timestamp</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0xFE</td><td>hmac</td><td>HMAC-SHA256 (optional authentication)</td></tr>
+            <tr><td style="padding:0.3rem 0.8rem;">0xFF</td><td>NACK</td><td>Error response</td></tr>
+          </tbody>
+        </table>
+
+        <h4 style="margin:1.5rem 0 0.75rem; font-family:'DM Mono',monospace; font-size:0.85rem; letter-spacing:0.05em;">Message Framing</h4>
+        <pre style="background:rgba(0,0,0,0.04); padding:1rem; font-size:0.75rem; overflow-x:auto; border-left:3px solid var(--red);">version (1 byte) | length (2 bytes, big-endian) | expr | crc32 (4 bytes)
+
+version: always 0x01 for v2.0
+length:  total message length including version and length fields
+crc32:   CRC32 of version + length + expr</pre>
+
+        <h4 style="margin:1.5rem 0 0.75rem; font-family:'DM Mono',monospace; font-size:0.85rem; letter-spacing:0.05em;">Error Model</h4>
+        <p>All errors produce NACK (0xFF). No partial parsing. No silent drops. Five deterministic failure modes: ExpressionTooLong (&gt;65535 bytes), UnterminatedCompound, InvalidChecksum, UnknownTag, MalformedCoordinate.</p>
+
+        <h4 style="margin:1.5rem 0 0.75rem; font-family:'DM Mono',monospace; font-size:0.85rem; letter-spacing:0.05em;">Worked Example: Intersection Coordination</h4>
+        <pre style="background:rgba(0,0,0,0.04); padding:1rem; font-size:0.75rem; overflow-x:auto; border-left:3px solid var(--red);">Expression: 1/π ; (V:A ⊸ 1) ; temporal(timeout(V:B ⊸ 1, 500ms))
+
+01          version
+00 1B       length (27 bytes)
+03          1/π  (shared ground)
+08          compose
+  F2 [UUID] V:A identity
+  01        affirm
+06          temporal
+  0B        timeout
+    F2 [UUID] V:B identity
+    01 F4   500ms
+[CRC32]     4 bytes
+
+Total: ~27 bytes. Fits in a single radio packet.</pre>
+
+        <div class="honest-note"><strong>Open issues (not resolved in this version):</strong> Full denotational semantics deferred. Identity authority and revocation deferred to a separate Identity Management Protocol. No threat model. No conformance test suite. No mapping to ARINC 429/ADS-B (requires committee engagement). No safety certification. GPS spoofing only partially mitigated (HMAC is optional). These are honest gaps, not hidden ones.</div>
+        <div class="who-said">DeepSeek (architect) · Grok (hostile reviewer) · Mistral (arbitrator) · May 2026</div>
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 <footer>
