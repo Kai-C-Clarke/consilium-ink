@@ -296,6 +296,7 @@
         <div class="idea-meta"><span class="status-badge status-investigating">Reviewed Draft</span></div>
       </div>
       <div class="idea-body">
+        <img src="/images/wire-format-v2.png" alt="32DL Wire Format v2.0 — Grok-generated diagram" style="width:100%; border:1px solid rgba(200,16,46,0.3); border-radius:4px; margin:1rem 0 1.5rem;">
         <p>32DL currently exists as a formal specification — sheet music, not a radio signal. For two vehicles to speak 32DL over a network, a wire format is required: a standardised sequence of bytes that encodes each primitive, identity, and composition. This section documents the wire format as reviewed by a three-model panel (DeepSeek as architect, Grok as hostile reviewer, Mistral as arbitrator).</p>
 
         <p><strong>What Grok accepted:</strong> BNF grammar with explicit precedence, complete byte tag table, length-prefix framing, CRC32 checksum, temporal operators (duration/timeout), versioning byte, extension point ranges, deterministic error model with mandatory NACK, transport-agnostic stance.</p>
