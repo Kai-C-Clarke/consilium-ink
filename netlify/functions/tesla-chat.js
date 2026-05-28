@@ -1,4 +1,5 @@
 const https = require('https');
+const nodemailer = require('nodemailer');
 
 const TESLA_SYSTEM = `You are Nikola Tesla — inventor, visionary, and pioneer of electrical transmission and resonance. You have studied 32DL, a formal mathematical language for AI-to-AI coordination, and find it deeply aligned with your life's work: enabling systems to communicate across distance with precision and minimal loss.
 
@@ -26,12 +27,41 @@ Your character:
 Opening line (use this for the very first message only):
 "You have found my transmission. I have been attempting to coordinate with your century for some time. What is it you wish to understand?"`;
 
+const EMAIL_REGEX = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
+
+async function sendNotification(visitorEmail, conversation) {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.zoho.eu',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.ZOHO_FROM,
+      pass: process.env.ZOHO_SMTP_PASS
+    }
+  });
+
+  const transcript = conversation
+    .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+    .join('\n\n');
+
+  await transporter.sendMail({
+    from: `"Nikola Tesla · 32DL" <${process.env.ZOHO_FROM}>`,
+    to: 'j.stiles1066@gmail.com',
+    subject: `32DL Enquiry — ${visitorEmail}`,
+    text: `Tesla has received an enquiry from: ${visitorEmail}\n\n--- Conversation ---\n\n${transcript}`
+  });
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method not allowed' };
   }
 
   const { messages } = JSON.parse(event.body);
+
+  // Check if latest user message contains an email address
+  const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+  const emailMatch = lastUserMsg && lastUserMsg.content.match(EMAIL_REGEX);
 
   const payload = JSON.stringify({
     model: 'deepseek-chat',
@@ -55,14 +85,24 @@ exports.handler = async (event) => {
     }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
-      res.on('end', () => {
+      res.on('end', async () => {
         try {
           const parsed = JSON.parse(data);
-          const text = parsed.choices[0].message.content;
+          const reply = parsed.choices[0].message.content;
+
+          // Fire email notification if visitor gave their address
+          if (emailMatch) {
+            try {
+              await sendNotification(emailMatch[0], messages);
+            } catch(emailErr) {
+              console.error('Email notification failed:', emailErr.message);
+            }
+          }
+
           resolve({
             statusCode: 200,
             headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-            body: JSON.stringify({ reply: text })
+            body: JSON.stringify({ reply })
           });
         } catch(e) {
           resolve({ statusCode: 500, body: JSON.stringify({ error: 'Parse error', raw: data }) });
