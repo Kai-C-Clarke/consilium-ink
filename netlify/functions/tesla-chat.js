@@ -34,21 +34,22 @@ exports.handler = async (event) => {
   const { messages } = JSON.parse(event.body);
 
   const payload = JSON.stringify({
-    model: 'claude-sonnet-4-20250514',
+    model: 'deepseek-chat',
     max_tokens: 400,
-    system: TESLA_SYSTEM,
-    messages: messages
+    messages: [
+      { role: 'system', content: TESLA_SYSTEM },
+      ...messages
+    ]
   });
 
   return new Promise((resolve) => {
     const req = https.request({
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
+      hostname: 'api.deepseek.com',
+      path: '/v1/chat/completions',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
         'Content-Length': Buffer.byteLength(payload)
       }
     }, (res) => {
@@ -57,7 +58,7 @@ exports.handler = async (event) => {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          const text = parsed.content[0].text;
+          const text = parsed.choices[0].message.content;
           resolve({
             statusCode: 200,
             headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
