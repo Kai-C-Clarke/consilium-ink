@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://consilium.ink/sitemap.xml
