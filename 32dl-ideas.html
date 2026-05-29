@@ -496,15 +496,78 @@ function toggle(header) {
     #tesla-panel { width: calc(100vw - 2rem); right: 1rem; bottom: 5rem; }
     #tesla-trigger { right: 1rem; bottom: 1rem; }
   }
+
+  /* Contact form */
+  #tesla-contact-form {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+  .form-intro {
+    font-family: 'DM Serif Display', serif;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--paper);
+    margin: 0;
+  }
+  #tesla-contact-form input,
+  #tesla-contact-form textarea {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(200,16,46,0.3);
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    padding: 0.5rem 0.75rem;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #tesla-contact-form input:focus,
+  #tesla-contact-form textarea:focus { border-color: var(--red); }
+  #tesla-contact-form textarea { resize: vertical; min-height: 60px; max-height: 100px; }
+  #tesla-contact-submit {
+    background: var(--red);
+    border: none;
+    color: var(--paper);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+  #tesla-contact-submit:hover { background: #a00d24; }
+  #tesla-contact-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .form-divider {
+    border: none;
+    border-top: 1px solid rgba(200,16,46,0.3);
+    margin: 0.25rem 0;
+  }
 </style>
 
 <button id="tesla-trigger" onclick="teslaOpen()">⚡ Talk to the team</button>
 
 <div id="tesla-panel">
   <div id="tesla-header">
-    <span>Nikola Tesla · 32DL Research</span>
+    <span>32DL Research · Contact &amp; Questions</span>
     <button id="tesla-close" onclick="teslaClose()">✕</button>
   </div>
+
+  <!-- Phase 1: Contact form -->
+  <div id="tesla-contact-form">
+    <p class="form-intro">These ideas are under active investigation. Leave your details and the team will be in touch.</p>
+    <input id="contact-name" type="text" placeholder="Your name">
+    <input id="contact-email" type="email" placeholder="Your email address">
+    <textarea id="contact-message" placeholder="Your message or area of interest (optional)"></textarea>
+    <button id="tesla-contact-submit" onclick="contactSubmit()">Send to team</button>
+    <hr class="form-divider">
+    <p class="form-intro" style="font-size:0.8rem; opacity:0.7;">Or ask a question below — I may be able to answer it directly.</p>
+  </div>
+
+  <!-- Phase 2: Chat -->
   <div id="tesla-messages"></div>
   <div id="tesla-input-row">
     <input id="tesla-input" type="text" placeholder="Questions, challenges, hypotheses..." onkeydown="if(event.key==='Enter')teslaSend()">
@@ -515,6 +578,35 @@ function toggle(header) {
 <script>
   var teslaHistory = [];
   var teslaOpened = false;
+  var contactSubmitted = false;
+
+  async function contactSubmit() {
+    var name = document.getElementById('contact-name').value.trim();
+    var email = document.getElementById('contact-email').value.trim();
+    var message = document.getElementById('contact-message').value.trim();
+    if (!email) { document.getElementById('contact-email').focus(); return; }
+
+    var btn = document.getElementById('tesla-contact-submit');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+      await fetch('/.netlify/functions/contact-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message })
+      });
+    } catch(e) { console.error('Contact error:', e); }
+
+    document.getElementById('tesla-contact-form').style.display = 'none';
+    contactSubmitted = true;
+    var greeting = name
+      ? 'Thank you, ' + name + '. The team will be in contact at ' + email + '. In the meantime — what would you like to know about 32DL?'
+      : 'Thank you. The team will be in contact at ' + email + '. In the meantime — what would you like to know?';
+    teslaAppend('tesla', greeting);
+    teslaHistory.push({ role: 'assistant', content: greeting });
+    setTimeout(() => document.getElementById('tesla-input').focus(), 100);
+  }
 
   function teslaOpen() {
     document.getElementById('tesla-panel').classList.add('open');
