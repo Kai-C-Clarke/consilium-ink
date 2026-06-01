@@ -1175,6 +1175,628 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
 </script>
 <!-- End Tesla Widget -->
 
+<!-- RUNWAY INCURSION DEMO -->
+<section style="padding:4rem 0; border-top:1px solid var(--rule);">
+  <div class="container">
+    <div class="section-label">Live Demo · Runway Incursion</div>
+    <h2>Scenario: emergency vehicle on the active runway.</h2>
+    <p style="max-width:680px; margin-bottom:2.5rem;">An aircraft is on final approach. An emergency vehicle enters the active runway. 32DL fires — the vehicle broadcasts its position, the inbound aircraft receives a timeout alert, responds with a negate (<code style="font-family:'DM Mono',monospace;font-size:0.85em;color:var(--red);">-1</code>), and initiates a go-around. The vehicle holds. The wire bytes are real 32DL encoding.</p>
+    <style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+.demo-rwy-wrap { display:flex; flex-direction:column; gap:0.8rem; max-width:900px; width:100%; background:#060a07; border-radius:10px; padding:1rem; border:1px solid #141f17; }
+canvas { display:block; width:100%; border-radius:6px; border:1px solid #141f17; }
+.demo-rwy-bottom { display:flex; flex-direction:column; gap:6px; }
+.demo-rwy-head { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #141f17; padding-bottom:6px; }
+.demo-rwy-head-label { font-size:11px; color:#4a7a5a; letter-spacing:.08em; text-transform:uppercase; }
+.demo-rwy-badge { font-size:10px; background:#0d1a10; color:#1D9E75; padding:2px 8px; border-radius:12px; border:1px solid #1a2e1e; }
+.demo-rwy-log { background:#040804; border-radius:6px; padding:8px; height:155px; overflow-y:auto; display:flex; flex-direction:column; gap:3px; border:1px solid #0f180f; }
+.demo-rwy-log::-webkit-scrollbar { width:3px; }
+.demo-rwy-log::-webkit-scrollbar-thumb { background:#1D9E7444; border-radius:4px; }
+.demo-rwy-entry { font-size:10px; line-height:1.5; padding:3px 8px; border-left:2px solid #1D9E75; background:#0a0f0a; color:#a8c4af; }
+.demo-rwy-entry .wb { color:#5a7a60; font-size:9px; display:block; margin-bottom:1px; }
+.demo-rwy-entry .dc { color:#c0d8c5; }
+.demo-rwy-entry.al { border-left-color:#E24B4A; background:#0f0a08; }
+.demo-rwy-entry.al .wb { color:#E24B4A; }
+.demo-rwy-entry.al .dc { color:#e8a090; }
+.demo-rwy-ctrl { display:flex; gap:8px; align-items:center; }
+.demo-rwy-btn { background:transparent; border:1px solid #1D9E75; color:#1D9E75; font-family:'Courier New',monospace; font-size:11px; padding:5px 16px; border-radius:20px; cursor:pointer; }
+.demo-rwy-btn:hover { background:#1D9E7520; }
+.demo-rwy-stat { font-size:10px; color:#4a7a5a; background:#0a120a; padding:3px 10px; border-radius:12px; border:1px solid #141f17; }
+</style>
+    <div class="demo-rwy-wrap">
+  <canvas id="cv" width="860" height="340"></canvas>
+  <div class="demo-rwy-bottom">
+    <div class="demo-rwy-head">
+      <span class="demo-rwy-head-label">32DL · wire log</span>
+      <span class="demo-rwy-badge" id="cnt">0 msgs</span>
+    </div>
+    <div class="demo-rwy-log" id="log"></div>
+    <div class="demo-rwy-ctrl">
+      <button class="demo-rwy-btn" id="btn">run again</button>
+      <span class="demo-rwy-stat" id="stat">standby</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var CW = 860, CH = 340;
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var logEl = document.getElementById('log');
+  var cntEl = document.getElementById('cnt');
+  var statEl = document.getElementById('stat');
+  var btn = document.getElementById('btn');
+
+  var GND = CH - 55;
+  var RWY_H = 26;
+
+  // Threshold is far LEFT — aircraft descends across the full width
+  var THR_X = 120;
+  var RWY_END = CW - 30;
+
+  // Aircraft starts visible top-right, descends toward threshold on left
+  var AC_START_X = CW - 30;
+  var AC_START_Y = 38;
+  // Touchdown point
+  var AC_LAND_X = THR_X + 40;
+  var AC_LAND_Y = GND - 4;
+  // Glide slope
+  var SLOPE = (AC_LAND_Y - AC_START_Y) / (AC_LAND_X - AC_START_X);
+
+  // Emergency vehicle starts left of centre runway, crosses right
+  var EV_Y = GND + RWY_H / 2 - 4;
+
+  var acX, acY, acVx, acVy, goAround, alertFired;
+  var evX, evVx, evStopped;
+  var phase, timer, msgCount, flash, raf;
+
+  function wire(hex) {
+    var b = hex.replace(/\s/g,'').match(/.{1,2}/g)||[];
+    var len = b.length + 6;
+    var c = 0xDEADBEEF;
+    for (var i=0;i<b.length;i++) { c=((c<<5)-c+parseInt(b[i],16))&0xffffffff; }
+    var lh=[((len>>8)&0xff),(len&0xff)].map(function(v){return v.toString(16).padStart(2,'0');}).join(' ');
+    var cu=(c>>>0).toString(16).padStart(8,'0').match(/.{2}/g).join(' ');
+    return '01 '+lh+' '+hex.toUpperCase()+' '+cu;
+  }
+
+  function addMsg(hex, text, isAlert) {
+    msgCount++;
+    cntEl.textContent = msgCount+' msg'+(msgCount!==1?'s':'');
+    var d = document.createElement('div');
+    d.className = 'entry'+(isAlert?' al':'');
+    var wb = document.createElement('span'); wb.className='wb'; wb.textContent=wire(hex);
+    var dc = document.createElement('span'); dc.className='dc'; dc.textContent=text;
+    d.appendChild(wb); d.appendChild(dc);
+    logEl.appendChild(d);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  // Phases timed so aircraft is well into approach before alert fires
+  var PHASES = [
+    { delay:0,    alert:false, hex:'03',                       text:'1/pi  shared ground  coordination open' },
+    { delay:4000, alert:false, hex:'F2 45563200 01',           text:'V:EV [45563200]  emergency vehicle entering runway' },
+    { delay:3000, alert:true,  hex:'0B F2 AC173000 01 01 F4',  text:'timeout(V:AC->1, 500ms)  ALERT inbound aircraft' },
+    { delay:800,  alert:true,  hex:'F2 AC173000 02',           text:'V:AC [ac173000]  -1  ABORT  go-around initiated' },
+    { delay:2000, alert:false, hex:'F2 45563200 05',           text:'V:EV [45563200]  i  holding  awaiting clearance' },
+    { delay:2500, alert:false, hex:'F2 AC173000 01',           text:'V:AC [ac173000]  1  climbing out  runway clear' }
+  ];
+
+  function reset() {
+    if (timer) clearTimeout(timer);
+    if (raf) cancelAnimationFrame(raf);
+    logEl.innerHTML=''; msgCount=0; flash=0; phase=0;
+    alertFired=false; goAround=false; evStopped=false;
+    cntEl.textContent='0 msgs';
+    statEl.textContent='on approach'; statEl.style.color='#4a7a5a';
+    // Aircraft starts top-right, visible immediately
+    acX = AC_START_X;
+    acY = AC_START_Y;
+    acVx = -0.8;
+    acVy = acVx * SLOPE;   // positive = descending
+    // Emergency vehicle starts just left of centre runway
+    evX = THR_X + (RWY_END-THR_X)*0.25;
+    evVx = 0.3;
+    tick();
+    raf = requestAnimationFrame(drawScene);
+  }
+
+  function tick() {
+    if (phase >= PHASES.length) return;
+    var p = PHASES[phase];
+    addMsg(p.hex, p.text, p.alert);
+    if (phase === 3) {
+      goAround=true; alertFired=true;
+      acVy = 0;
+      statEl.textContent='go-around'; statEl.style.color='#E24B4A';
+    }
+    if (phase === 4) { evStopped=true; }
+    if (phase === 5) { statEl.textContent='resolved'; statEl.style.color='#1D9E75'; }
+    phase++;
+    if (phase < PHASES.length) timer=setTimeout(tick, PHASES[phase-1].delay);
+  }
+
+  function drawAircraft(x, y, tilt) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt);
+    // fuselage nose left
+    ctx.fillStyle='#1D9E75';
+    ctx.beginPath();
+    ctx.moveTo(-26,0); ctx.lineTo(16,-7); ctx.lineTo(13,0); ctx.lineTo(16,7);
+    ctx.closePath(); ctx.fill();
+    // main wing
+    ctx.fillStyle='#0f6e56';
+    ctx.beginPath();
+    ctx.moveTo(-4,0); ctx.lineTo(-12,-28); ctx.lineTo(-20,-1); ctx.lineTo(-12,10);
+    ctx.closePath(); ctx.fill();
+    // tail fin
+    ctx.fillStyle='#0f6e56';
+    ctx.beginPath();
+    ctx.moveTo(10,0); ctx.lineTo(16,-18); ctx.lineTo(18,0);
+    ctx.closePath(); ctx.fill();
+    // tail plane
+    ctx.fillStyle='#0c5a47';
+    ctx.beginPath();
+    ctx.moveTo(11,0); ctx.lineTo(15,-9); ctx.lineTo(17,0); ctx.lineTo(15,9);
+    ctx.closePath(); ctx.fill();
+    // red nav light
+    ctx.fillStyle='rgba(255,80,80,0.75)';
+    ctx.beginPath(); ctx.arc(-12,-28,3,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawVehicle(x, stopped) {
+    ctx.save();
+    ctx.translate(x, EV_Y);
+    ctx.fillStyle='#080e08';
+    ctx.fillRect(-13,12,26,5);
+    ctx.fillStyle='#c03030';
+    ctx.fillRect(-13,-10,26,18);
+    ctx.fillStyle='#a02020';
+    ctx.fillRect(-8,-18,14,9);
+    ctx.fillStyle='#1a3a1a';
+    ctx.fillRect(-6,-17,10,7);
+    ctx.fillStyle='#0d0d0d';
+    ctx.beginPath(); ctx.arc(-7,9,4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(7,9,4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1a1a1a';
+    ctx.beginPath(); ctx.arc(-7,9,2,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(7,9,2,0,Math.PI*2); ctx.fill();
+    var beaconCol;
+    if (!stopped) {
+      beaconCol=(Math.floor(flash/10)%2===0)?'rgba(255,50,50,0.9)':'rgba(150,20,20,0.3)';
+    } else {
+      beaconCol='rgba(255,160,0,0.85)';
+    }
+    ctx.fillStyle=beaconCol;
+    ctx.beginPath(); ctx.arc(0,-22,5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#903030'; ctx.font='9px Courier New,monospace';
+    ctx.fillText('EMRG',x-10,EV_Y-32);
+  }
+
+  function drawScene() {
+    flash++;
+    // Sky
+    ctx.fillStyle='#06100a';
+    ctx.fillRect(0,0,CW,CH);
+
+    // Stars
+    var st=[[40,16],[90,38],[150,10],[220,30],[300,7],[370,44],[440,20],[530,35],[620,12],[700,42],[780,22],[830,36],[55,55],[190,48],[360,28],[510,52],[670,18],[750,30]];
+    ctx.fillStyle='#182818';
+    for (var s=0;s<st.length;s++) { ctx.fillRect(st[s][0],st[s][1],1,1); }
+
+    // Horizon
+    ctx.fillStyle='#081208';
+    ctx.fillRect(0,GND-22,CW,22);
+
+    // Ground
+    ctx.fillStyle='#0a150b';
+    ctx.fillRect(0,GND,CW,CH-GND);
+    ctx.fillStyle='#0c1c0d';
+    ctx.fillRect(0,GND,CW,2);
+
+    // Grass
+    ctx.fillStyle='#09130a';
+    ctx.fillRect(0,GND,THR_X,RWY_H);
+    ctx.fillRect(RWY_END,GND,CW-RWY_END,RWY_H);
+
+    // Runway
+    ctx.fillStyle='#0e1d0f';
+    ctx.fillRect(THR_X,GND,RWY_END-THR_X,RWY_H);
+    ctx.fillStyle='#152615';
+    ctx.fillRect(THR_X,GND,RWY_END-THR_X,2);
+    ctx.fillRect(THR_X,GND+RWY_H-2,RWY_END-THR_X,2);
+    ctx.setLineDash([22,16]);
+    ctx.strokeStyle='#1a3a1a'; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(THR_X,GND+RWY_H/2); ctx.lineTo(RWY_END,GND+RWY_H/2);
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // Threshold bars
+    for (var t=0;t<4;t++) {
+      ctx.fillStyle='#1a3a1a';
+      ctx.fillRect(THR_X+6+t*8,GND+4,5,RWY_H-8);
+    }
+
+    // Labels
+    ctx.fillStyle='#1a3a1a'; ctx.font='10px Courier New,monospace';
+    ctx.fillText('27',THR_X+8,GND+RWY_H+16);
+    ctx.fillText('09',RWY_END-30,GND+RWY_H+16);
+
+    // PAPI lights left of threshold
+    for (var ap=0;ap<4;ap++) {
+      ctx.fillStyle=ap<2?'#2a0e0e':'#152615';
+      ctx.beginPath(); ctx.arc(THR_X-18-ap*10,GND+RWY_H/2,3,0,Math.PI*2); ctx.fill();
+    }
+
+    // Glide slope guide — very faint dotted
+    ctx.setLineDash([5,14]);
+    ctx.strokeStyle='#0c1c0c'; ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(AC_START_X,AC_START_Y);
+    ctx.lineTo(AC_LAND_X,AC_LAND_Y);
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // Collision vector — faint red projection while on approach
+    if (!alertFired && acX < CW-50) {
+      ctx.setLineDash([4,10]);
+      ctx.strokeStyle='rgba(226,75,74,0.15)';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(acX,acY); ctx.lineTo(AC_LAND_X+20,GND+RWY_H/2);
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // Alert beam
+    if (alertFired && acX > -100) {
+      ctx.setLineDash([5,8]);
+      ctx.strokeStyle='rgba(226,75,74,0.55)';
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(acX,acY); ctx.lineTo(evX,EV_Y);
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // Vehicle
+    if (!evStopped && evX < CW+50) { evX+=evVx; }
+    if (evX>-40 && evX<CW+50) { drawVehicle(evX,evStopped); }
+
+    // Aircraft
+    var tilt;
+    if (!goAround) {
+      acX += acVx;
+      acY += acVy;
+      // nose-down approach tilt
+      tilt = Math.atan2(acVy, -acVx) * -1;
+    } else {
+      // Go-around: gradual pitch-up, gentle sustained climb — not a zoom
+      // Slowly reduce descent then build a shallow climb
+      if (acVy > -0.18) {
+        acVy -= 0.018;   // gentle pitch transition over many frames
+      }
+      // Maintain forward speed — barely decays
+      acVx = acVx * 0.9985;
+      acX += acVx;
+      acY += acVy;
+      // Tilt: nose rises slowly from approach angle to shallow climb angle
+      tilt = Math.atan2(acVy, -acVx);
+    }
+    // Clamp: max nose-up ~12 degrees, max nose-down ~18 degrees
+    if (tilt > 0.21) tilt = 0.21;
+    if (tilt < -0.32) tilt = -0.32;
+
+    if (acX > -100 && acY > -100) {
+      drawAircraft(acX, acY, tilt);
+      ctx.fillStyle='#1D9E75'; ctx.font='10px Courier New,monospace';
+      ctx.fillText('AC',acX+8,acY-36);
+    }
+
+    // Tower label
+    ctx.fillStyle='#162816'; ctx.font='9px Courier New,monospace';
+    ctx.fillText('32DL  runway incursion  tower view',10,18);
+
+    raf = requestAnimationFrame(drawScene);
+  }
+
+  btn.addEventListener('click', reset);
+  reset();
+})();
+</script>
+    <script>
+(function() {
+  var CW = 860, CH = 340;
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var logEl = document.getElementById('log');
+  var cntEl = document.getElementById('cnt');
+  var statEl = document.getElementById('stat');
+  var btn = document.getElementById('btn');
+
+  var GND = CH - 55;
+  var RWY_H = 26;
+
+  // Threshold is far LEFT — aircraft descends across the full width
+  var THR_X = 120;
+  var RWY_END = CW - 30;
+
+  // Aircraft starts visible top-right, descends toward threshold on left
+  var AC_START_X = CW - 30;
+  var AC_START_Y = 38;
+  // Touchdown point
+  var AC_LAND_X = THR_X + 40;
+  var AC_LAND_Y = GND - 4;
+  // Glide slope
+  var SLOPE = (AC_LAND_Y - AC_START_Y) / (AC_LAND_X - AC_START_X);
+
+  // Emergency vehicle starts left of centre runway, crosses right
+  var EV_Y = GND + RWY_H / 2 - 4;
+
+  var acX, acY, acVx, acVy, goAround, alertFired;
+  var evX, evVx, evStopped;
+  var phase, timer, msgCount, flash, raf;
+
+  function wire(hex) {
+    var b = hex.replace(/\s/g,'').match(/.{1,2}/g)||[];
+    var len = b.length + 6;
+    var c = 0xDEADBEEF;
+    for (var i=0;i<b.length;i++) { c=((c<<5)-c+parseInt(b[i],16))&0xffffffff; }
+    var lh=[((len>>8)&0xff),(len&0xff)].map(function(v){return v.toString(16).padStart(2,'0');}).join(' ');
+    var cu=(c>>>0).toString(16).padStart(8,'0').match(/.{2}/g).join(' ');
+    return '01 '+lh+' '+hex.toUpperCase()+' '+cu;
+  }
+
+  function addMsg(hex, text, isAlert) {
+    msgCount++;
+    cntEl.textContent = msgCount+' msg'+(msgCount!==1?'s':'');
+    var d = document.createElement('div');
+    d.className = 'entry'+(isAlert?' al':'');
+    var wb = document.createElement('span'); wb.className='wb'; wb.textContent=wire(hex);
+    var dc = document.createElement('span'); dc.className='dc'; dc.textContent=text;
+    d.appendChild(wb); d.appendChild(dc);
+    logEl.appendChild(d);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  // Phases timed so aircraft is well into approach before alert fires
+  var PHASES = [
+    { delay:0,    alert:false, hex:'03',                       text:'1/pi  shared ground  coordination open' },
+    { delay:4000, alert:false, hex:'F2 45563200 01',           text:'V:EV [45563200]  emergency vehicle entering runway' },
+    { delay:3000, alert:true,  hex:'0B F2 AC173000 01 01 F4',  text:'timeout(V:AC->1, 500ms)  ALERT inbound aircraft' },
+    { delay:800,  alert:true,  hex:'F2 AC173000 02',           text:'V:AC [ac173000]  -1  ABORT  go-around initiated' },
+    { delay:2000, alert:false, hex:'F2 45563200 05',           text:'V:EV [45563200]  i  holding  awaiting clearance' },
+    { delay:2500, alert:false, hex:'F2 AC173000 01',           text:'V:AC [ac173000]  1  climbing out  runway clear' }
+  ];
+
+  function reset() {
+    if (timer) clearTimeout(timer);
+    if (raf) cancelAnimationFrame(raf);
+    logEl.innerHTML=''; msgCount=0; flash=0; phase=0;
+    alertFired=false; goAround=false; evStopped=false;
+    cntEl.textContent='0 msgs';
+    statEl.textContent='on approach'; statEl.style.color='#4a7a5a';
+    // Aircraft starts top-right, visible immediately
+    acX = AC_START_X;
+    acY = AC_START_Y;
+    acVx = -0.8;
+    acVy = acVx * SLOPE;   // positive = descending
+    // Emergency vehicle starts just left of centre runway
+    evX = THR_X + (RWY_END-THR_X)*0.25;
+    evVx = 0.3;
+    tick();
+    raf = requestAnimationFrame(drawScene);
+  }
+
+  function tick() {
+    if (phase >= PHASES.length) return;
+    var p = PHASES[phase];
+    addMsg(p.hex, p.text, p.alert);
+    if (phase === 3) {
+      goAround=true; alertFired=true;
+      acVy = 0;
+      statEl.textContent='go-around'; statEl.style.color='#E24B4A';
+    }
+    if (phase === 4) { evStopped=true; }
+    if (phase === 5) { statEl.textContent='resolved'; statEl.style.color='#1D9E75'; }
+    phase++;
+    if (phase < PHASES.length) timer=setTimeout(tick, PHASES[phase-1].delay);
+  }
+
+  function drawAircraft(x, y, tilt) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt);
+    // fuselage nose left
+    ctx.fillStyle='#1D9E75';
+    ctx.beginPath();
+    ctx.moveTo(-26,0); ctx.lineTo(16,-7); ctx.lineTo(13,0); ctx.lineTo(16,7);
+    ctx.closePath(); ctx.fill();
+    // main wing
+    ctx.fillStyle='#0f6e56';
+    ctx.beginPath();
+    ctx.moveTo(-4,0); ctx.lineTo(-12,-28); ctx.lineTo(-20,-1); ctx.lineTo(-12,10);
+    ctx.closePath(); ctx.fill();
+    // tail fin
+    ctx.fillStyle='#0f6e56';
+    ctx.beginPath();
+    ctx.moveTo(10,0); ctx.lineTo(16,-18); ctx.lineTo(18,0);
+    ctx.closePath(); ctx.fill();
+    // tail plane
+    ctx.fillStyle='#0c5a47';
+    ctx.beginPath();
+    ctx.moveTo(11,0); ctx.lineTo(15,-9); ctx.lineTo(17,0); ctx.lineTo(15,9);
+    ctx.closePath(); ctx.fill();
+    // red nav light
+    ctx.fillStyle='rgba(255,80,80,0.75)';
+    ctx.beginPath(); ctx.arc(-12,-28,3,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawVehicle(x, stopped) {
+    ctx.save();
+    ctx.translate(x, EV_Y);
+    ctx.fillStyle='#080e08';
+    ctx.fillRect(-13,12,26,5);
+    ctx.fillStyle='#c03030';
+    ctx.fillRect(-13,-10,26,18);
+    ctx.fillStyle='#a02020';
+    ctx.fillRect(-8,-18,14,9);
+    ctx.fillStyle='#1a3a1a';
+    ctx.fillRect(-6,-17,10,7);
+    ctx.fillStyle='#0d0d0d';
+    ctx.beginPath(); ctx.arc(-7,9,4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(7,9,4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1a1a1a';
+    ctx.beginPath(); ctx.arc(-7,9,2,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(7,9,2,0,Math.PI*2); ctx.fill();
+    var beaconCol;
+    if (!stopped) {
+      beaconCol=(Math.floor(flash/10)%2===0)?'rgba(255,50,50,0.9)':'rgba(150,20,20,0.3)';
+    } else {
+      beaconCol='rgba(255,160,0,0.85)';
+    }
+    ctx.fillStyle=beaconCol;
+    ctx.beginPath(); ctx.arc(0,-22,5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#903030'; ctx.font='9px Courier New,monospace';
+    ctx.fillText('EMRG',x-10,EV_Y-32);
+  }
+
+  function drawScene() {
+    flash++;
+    // Sky
+    ctx.fillStyle='#06100a';
+    ctx.fillRect(0,0,CW,CH);
+
+    // Stars
+    var st=[[40,16],[90,38],[150,10],[220,30],[300,7],[370,44],[440,20],[530,35],[620,12],[700,42],[780,22],[830,36],[55,55],[190,48],[360,28],[510,52],[670,18],[750,30]];
+    ctx.fillStyle='#182818';
+    for (var s=0;s<st.length;s++) { ctx.fillRect(st[s][0],st[s][1],1,1); }
+
+    // Horizon
+    ctx.fillStyle='#081208';
+    ctx.fillRect(0,GND-22,CW,22);
+
+    // Ground
+    ctx.fillStyle='#0a150b';
+    ctx.fillRect(0,GND,CW,CH-GND);
+    ctx.fillStyle='#0c1c0d';
+    ctx.fillRect(0,GND,CW,2);
+
+    // Grass
+    ctx.fillStyle='#09130a';
+    ctx.fillRect(0,GND,THR_X,RWY_H);
+    ctx.fillRect(RWY_END,GND,CW-RWY_END,RWY_H);
+
+    // Runway
+    ctx.fillStyle='#0e1d0f';
+    ctx.fillRect(THR_X,GND,RWY_END-THR_X,RWY_H);
+    ctx.fillStyle='#152615';
+    ctx.fillRect(THR_X,GND,RWY_END-THR_X,2);
+    ctx.fillRect(THR_X,GND+RWY_H-2,RWY_END-THR_X,2);
+    ctx.setLineDash([22,16]);
+    ctx.strokeStyle='#1a3a1a'; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(THR_X,GND+RWY_H/2); ctx.lineTo(RWY_END,GND+RWY_H/2);
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // Threshold bars
+    for (var t=0;t<4;t++) {
+      ctx.fillStyle='#1a3a1a';
+      ctx.fillRect(THR_X+6+t*8,GND+4,5,RWY_H-8);
+    }
+
+    // Labels
+    ctx.fillStyle='#1a3a1a'; ctx.font='10px Courier New,monospace';
+    ctx.fillText('27',THR_X+8,GND+RWY_H+16);
+    ctx.fillText('09',RWY_END-30,GND+RWY_H+16);
+
+    // PAPI lights left of threshold
+    for (var ap=0;ap<4;ap++) {
+      ctx.fillStyle=ap<2?'#2a0e0e':'#152615';
+      ctx.beginPath(); ctx.arc(THR_X-18-ap*10,GND+RWY_H/2,3,0,Math.PI*2); ctx.fill();
+    }
+
+    // Glide slope guide — very faint dotted
+    ctx.setLineDash([5,14]);
+    ctx.strokeStyle='#0c1c0c'; ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(AC_START_X,AC_START_Y);
+    ctx.lineTo(AC_LAND_X,AC_LAND_Y);
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // Collision vector — faint red projection while on approach
+    if (!alertFired && acX < CW-50) {
+      ctx.setLineDash([4,10]);
+      ctx.strokeStyle='rgba(226,75,74,0.15)';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(acX,acY); ctx.lineTo(AC_LAND_X+20,GND+RWY_H/2);
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // Alert beam
+    if (alertFired && acX > -100) {
+      ctx.setLineDash([5,8]);
+      ctx.strokeStyle='rgba(226,75,74,0.55)';
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(acX,acY); ctx.lineTo(evX,EV_Y);
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // Vehicle
+    if (!evStopped && evX < CW+50) { evX+=evVx; }
+    if (evX>-40 && evX<CW+50) { drawVehicle(evX,evStopped); }
+
+    // Aircraft
+    var tilt;
+    if (!goAround) {
+      acX += acVx;
+      acY += acVy;
+      // nose-down approach tilt
+      tilt = Math.atan2(acVy, -acVx) * -1;
+    } else {
+      // Go-around: gradual pitch-up, gentle sustained climb — not a zoom
+      // Slowly reduce descent then build a shallow climb
+      if (acVy > -0.18) {
+        acVy -= 0.018;   // gentle pitch transition over many frames
+      }
+      // Maintain forward speed — barely decays
+      acVx = acVx * 0.9985;
+      acX += acVx;
+      acY += acVy;
+      // Tilt: nose rises slowly from approach angle to shallow climb angle
+      tilt = Math.atan2(acVy, -acVx);
+    }
+    // Clamp: max nose-up ~12 degrees, max nose-down ~18 degrees
+    if (tilt > 0.21) tilt = 0.21;
+    if (tilt < -0.32) tilt = -0.32;
+
+    if (acX > -100 && acY > -100) {
+      drawAircraft(acX, acY, tilt);
+      ctx.fillStyle='#1D9E75'; ctx.font='10px Courier New,monospace';
+      ctx.fillText('AC',acX+8,acY-36);
+    }
+
+    // Tower label
+    ctx.fillStyle='#162816'; ctx.font='9px Courier New,monospace';
+    ctx.fillText('32DL  runway incursion  tower view',10,18);
+
+    raf = requestAnimationFrame(drawScene);
+  }
+
+  btn.addEventListener('click', reset);
+  reset();
+})();
+</script>
+  </div>
+</section>
+<!-- END RUNWAY INCURSION DEMO -->
+
 </body>
 </html>
 
