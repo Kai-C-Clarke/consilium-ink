@@ -88,6 +88,51 @@
 
 <div class="ideas">
 
+  <!-- C IMPLEMENTATION — newest, 1 June 2026 -->
+  <div class="section">
+    <div class="category-label">C Implementation · Header-only · Multi-model reviewed · 1 June 2026</div>
+
+    <div class="idea-card">
+      <div class="idea-header" onclick="toggle(this)">
+        <div class="idea-title">thirtytwodl.h — A complete embedded C implementation of the 32DL Wire Format v2.0</div>
+        <div class="idea-meta">
+          <span class="status-badge status-investigating">Complete · 49/49 Tests Pass</span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--dim);">1 June 2026</span>
+        </div>
+      </div>
+      <div class="idea-body">
+        <p>The Wire Format v2.0 specification now has a working implementation. <code>thirtytwodl.h</code> is a single header file — no external dependencies, no dynamic memory allocation, deterministic execution — suitable for bare-metal embedded targets including Cortex-M, ESP32, STM32, and RP2040.</p>
+
+        <p>The implementation was produced by DeepSeek and put through two rounds of multi-model review. Grok's hostile review identified three critical issues in the first version: the duration and timeout operators were encoding incorrectly (missing the inner expression), GPS coordinate identity was absent entirely, and the decoder had an integer underflow risk on malformed frames. All three were fixed in the final version.</p>
+
+        <p><strong>What the library provides:</strong> wire frame encode and decode, CRC-32 validation, UUID and GPS identity encoding, temporal operators (duration and timeout correctly wrapping inner expressions), a full expression builder API, NACK generation, and NULL guards throughout. A test suite of 49 assertions covers all features including round-trip verification, CRC corruption detection, truncated frame rejection, and NULL pointer handling.</p>
+
+        <p><strong>The expression builder</strong> is the new addition beyond the original prototype. Instead of constructing expression byte sequences manually, callers use a simple stack-allocated API:</p>
+
+        <div class="code-eg"><span class="c">/* Build timeout(affirm, 500ms) without touching a byte array */</span>
+uint8_t inner[4], outer[32], frame[64];
+twodl_builder_t ib, ob;
+twodl_builder_init(&amp;ib, inner, sizeof(inner));
+twodl_builder_add_affirm(&amp;ib);
+twodl_builder_init(&amp;ob, outer, sizeof(outer));
+twodl_builder_add_timeout(&amp;ob, ib.buf, ib.pos, 500);
+size_t frame_len = sizeof(frame);
+twodl_encode_message(ob.buf, ob.pos, frame, &amp;frame_len);</div>
+
+        <p>Temporal operators take an explicit inner expression buffer rather than attempting in-place rewriting — a deliberate design choice for embedded safety. The builder propagates errors silently; callers check <code>twodl_builder_ok()</code> before use.</p>
+
+        <p><strong>Review panel:</strong> DeepSeek (architect / spec compliance), Mistral (systems engineer / safety), Grok (hostile reviewer / adversarial). The hostile review found the first prototype "cannot correctly implement the wire format for anything beyond the most trivial messages." The final version addresses every issue raised.</p>
+
+        <p><strong>Status:</strong> Prototype. Not safety-certified. Wire format encoding and decoding are correct and tested. Safety certification (ISO 26262, DO-178C) is out of scope for this stage.</p>
+
+        <p style="margin-top:1.5rem;">
+          <a href="https://raw.githubusercontent.com/Kai-C-Clarke/claude-working-memory/main/32DL/c-implementation/thirtytwodl.h" style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);text-decoration:none;border-bottom:1px solid var(--red);padding-bottom:1px;margin-right:2rem;" target="_blank">Download thirtytwodl.h →</a>
+          <a href="https://github.com/Kai-C-Clarke/claude-working-memory/tree/main/32DL/c-implementation" style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:#888;text-decoration:none;border-bottom:1px solid #ccc;padding-bottom:1px;" target="_blank">View on GitHub →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
   <!-- WIRE FORMAT — newest, 28 May 2026 -->
   <div class="section">
     <div class="category-label">Wire Format — v2.0 · Multi-model reviewed · 28 May 2026</div>
