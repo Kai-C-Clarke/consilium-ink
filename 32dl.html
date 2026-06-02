@@ -1196,10 +1196,10 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
   <div class="container">
     <div class="section-label">Live Demo &middot; Runway Incursion</div>
     <h2>Scenario: emergency vehicle on the active runway.</h2>
-    <p style="max-width:680px; margin-bottom:2.5rem;">An aircraft is on final approach. An emergency vehicle enters the active runway. 32DL fires &mdash; the vehicle broadcasts its position, the inbound aircraft receives a timeout alert, responds with a negate (<code style="font-family:'DM Mono',monospace;font-size:0.85em;color:var(--red);">-1</code>), and initiates a go-around. The vehicle holds. The wire bytes are real 32DL encoding.</p>
+    <p style="max-width:680px; margin-bottom:2.5rem;">An aircraft is on final approach. An emergency vehicle crosses the active runway. 32DL fires &mdash; both agents react simultaneously. The vehicle stops dead. The aircraft aborts its ground run, raises its nose, applies power and climbs away over the stationary vehicle. The wire bytes are real 32DL encoding. The clock sync sequence runs before each scenario.</p>
 
     <div style="display:flex;flex-direction:column;gap:0.8rem;background:#060a07;border-radius:10px;padding:1rem;border:1px solid #141f17;max-width:900px;">
-      <canvas id="rwyCv" width="860" height="340" style="display:block;width:100%;border-radius:6px;border:1px solid #141f17;"></canvas>
+      <canvas id="rwyCv" width="860" height="360" style="display:block;width:100%;border-radius:6px;border:1px solid #141f17;"></canvas>
       <div style="display:flex;flex-direction:column;gap:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #141f17;padding-bottom:6px;">
           <span style="font-size:11px;color:#4a7a5a;letter-spacing:.08em;text-transform:uppercase;font-family:'DM Mono',monospace;">32DL &middot; wire log</span>
@@ -1216,166 +1216,304 @@ I:vehicle_08 <span class="code-sym">⊸</span> <span class="code-val">1</span> <
 </section>
 <script>
 (function() {
-  var CW=860,CH=340;
+  var CW=860,CH=360;
   var cv=document.getElementById('rwyCv');
   var ctx=cv.getContext('2d');
   var logEl=document.getElementById('rwyLog');
   var cntEl=document.getElementById('rwyCnt');
   var statEl=document.getElementById('rwyStat');
   var btn=document.getElementById('rwyBtn');
-  var GND=CH-55,RWY_H=26,THR_X=120,RWY_END=CW-30;
-  var AC_START_X=CW-30,AC_START_Y=38;
-  var AC_LAND_X=THR_X+40,AC_LAND_Y=GND-4;
-  var SLOPE=(AC_LAND_Y-AC_START_Y)/(AC_LAND_X-AC_START_X);
-  var EV_Y=GND+RWY_H/2-4;
-  var acX,acY,acVx,acVy,goAround,alertFired,evX,evVx,evStopped,phase,timer,msgCount,flash,raf;
 
-  function wire(hex){
+(function() {
+  var CW=860, CH=360;
+  
+  var ctx=cv.getContext('2d');
+  
+  
+  
+  
+
+  var GND=CH-55, RWY_H=26;
+  var THR_X=100, RWY_END=CW-30;
+
+  // Aircraft starts high right, descends to near-ground level by mid-runway
+  // Alert fires when aircraft is low and close — truck is just ahead on runway
+  var AC_START_X=CW-20, AC_START_Y=50;
+  // Aircraft would touch down around x=280 at GND level
+  var AC_LAND_X=280, AC_LAND_Y=GND+2;
+  var SLOPE=(AC_LAND_Y-AC_START_Y)/(AC_LAND_X-AC_START_X);
+
+  // Truck crosses runway, stops at approx x=380 (ahead of touchdown point)
+  var EV_STOP_X=390;
+  var EV_Y=GND+RWY_H/2-4;
+
+  var CLK_X=CW-148, CLK_Y=12;
+
+  var acX, acY, acVx, acVy, goAround, alertFired, currentTilt, pitchUpRate;
+  var evX, evVx, evStopped;
+  var phase, timer, msgCount, flash, raf;
+  var clockState, clockTick, clockSyncDone;
+  var alertAlpha, collisionFlash;
+
+  function wire(hex) {
     var b=hex.replace(/\s/g,'').match(/.{1,2}/g)||[];
-    var len=b.length+6,c=0xDEADBEEF;
+    var len=b.length+6, c=0xDEADBEEF;
     for(var i=0;i<b.length;i++){c=((c<<5)-c+parseInt(b[i],16))&0xffffffff;}
     var lh=[((len>>8)&0xff),(len&0xff)].map(function(v){return v.toString(16).padStart(2,'0');}).join(' ');
     var cu=(c>>>0).toString(16).padStart(8,'0').match(/.{2}/g).join(' ');
     return '01 '+lh+' '+hex.toUpperCase()+' '+cu;
   }
 
-  function addMsg(hex,text,isAlert){
+  function addMsg(hex,text,isAlert) {
     msgCount++;
     cntEl.textContent=msgCount+' msg'+(msgCount!==1?'s':'');
     var d=document.createElement('div');
-    d.style.cssText='font-size:10px;line-height:1.5;padding:3px 8px;border-left:2px solid '+(isAlert?'#E24B4A':'#1D9E75')+';background:'+(isAlert?'#0f0a08':'#0a0f0a')+';color:#a8c4af;margin-bottom:3px;font-family:"DM Mono",monospace;';
+    d.style.cssText='font-size:10px;line-height:1.5;padding:3px 8px;border-left:2px solid '
+      +(isAlert?'#E24B4A':'#1D9E75')+';background:'+(isAlert?'#0f0a08':'#0a0f0a')
+      +';color:#a8c4af;margin-bottom:3px;font-family:"DM Mono",monospace;';
     var wb=document.createElement('span');
     wb.style.cssText='color:'+(isAlert?'#E24B4A':'#5a7a60')+';font-size:9px;display:block;margin-bottom:1px;';
     wb.textContent=wire(hex);
     var dc=document.createElement('span');
     dc.style.cssText='color:'+(isAlert?'#e8a090':'#c0d8c5')+';';
     dc.textContent=text;
-    d.appendChild(wb);d.appendChild(dc);
+    d.appendChild(wb); d.appendChild(dc);
     logEl.appendChild(d);
     logEl.scrollTop=logEl.scrollHeight;
   }
 
+  // Alert fires when aircraft reaches ~x=500 — low on approach, truck just ahead
   var PHASES=[
-    {delay:0,    alert:false,hex:'03',                      text:'1/pi  shared ground  coordination open'},
-    {delay:4000, alert:false,hex:'F2 45563200 01',          text:'V:EV [45563200]  emergency vehicle entering runway'},
-    {delay:3000, alert:true, hex:'0B F2 AC173000 01 01 F4', text:'timeout(V:AC->1, 500ms)  ALERT inbound aircraft'},
-    {delay:900,  alert:true, hex:'F2 AC173000 02',          text:'V:AC [ac173000]  -1  ABORT  go-around initiated'},
-    {delay:2000, alert:false,hex:'F2 45563200 05',          text:'V:EV [45563200]  i  holding  awaiting clearance'},
-    {delay:2500, alert:false,hex:'F2 AC173000 01',          text:'V:AC [ac173000]  1  climbing out  runway clear'}
+    {delay:0,    alert:false, hex:'03',                      text:'1/pi  shared ground  coordination open'},
+    {delay:4000, alert:false, hex:'F2 45563200 01',          text:'V:EV [45563200]  emergency vehicle crossing runway'},
+    {delay:3200, alert:true,  hex:'0B F2 AC173000 01 01 F4', text:'timeout(V:AC->1, 500ms)  ALERT  vehicle on runway'},
+    {delay:600,  alert:true,  hex:'F2 AC173000 02',          text:'V:AC [ac173000]  -1  ABORT  go-around power on'},
+    {delay:2200, alert:false, hex:'F2 45563200 05',          text:'V:EV [45563200]  i  stopped  holding position'},
+    {delay:3000, alert:false, hex:'F2 AC173000 01',          text:'V:AC [ac173000]  1  climbing out  runway clear'}
   ];
 
-  function reset(){
+  function reset() {
     if(timer)clearTimeout(timer);
     if(raf)cancelAnimationFrame(raf);
-    logEl.innerHTML='';msgCount=0;flash=0;phase=0;
-    alertFired=false;goAround=false;evStopped=false;
+    logEl.innerHTML=''; msgCount=0; flash=0; phase=0; collisionFlash=0;
+    alertFired=false; goAround=false; evStopped=false;
+    alertAlpha=0; currentTilt=0; pitchUpRate=0.010;
     cntEl.textContent='0 msgs';
-    statEl.textContent='on approach';statEl.style.color='#4a7a5a';
-    acX=AC_START_X;acY=AC_START_Y;acVx=-0.8;acVy=acVx*SLOPE;
-    evX=THR_X+(RWY_END-THR_X)*0.25;evVx=0.32;
-    tick();raf=requestAnimationFrame(drawScene);
+    statEl.textContent='synchronising'; statEl.style.color='#E24B4A';
+    acX=AC_START_X; acY=AC_START_Y;
+    acVx=-0.75; acVy=acVx*SLOPE;
+    // Truck starts left of centre and moves right slowly — will be mid-runway when alert fires
+    evX=THR_X+60; evVx=0.28;
+    clockState=0; clockTick=0; clockSyncDone=false;
+    timer=setTimeout(function(){
+      clockState=1;
+      timer=setTimeout(function(){
+        clockState=2; clockSyncDone=true;
+        statEl.textContent='on approach'; statEl.style.color='#4a7a5a';
+        addMsg('03','clock locked  GPS+MSF  coordination authorised');
+        timer=setTimeout(tick,600);
+      },2500);
+    },2000);
+    raf=requestAnimationFrame(drawScene);
   }
 
-  function tick(){
+  function tick() {
     if(phase>=PHASES.length)return;
     var p=PHASES[phase];
     addMsg(p.hex,p.text,p.alert);
-    if(phase===3){goAround=true;alertFired=true;acVy=0;statEl.textContent='go-around';statEl.style.color='#E24B4A';}
-    if(phase===4){evStopped=true;}
-    if(phase===5){statEl.textContent='resolved';statEl.style.color='#1D9E75';}
+    if(phase===2){
+      // Alert fires — both react simultaneously
+      alertFired=true; alertAlpha=1.0;
+      evStopped=true;       // truck stops dead
+      goAround=true;        // aircraft aborts
+      acVy=0;               // stop descent
+      statEl.textContent='go-around'; statEl.style.color='#E24B4A';
+    }
+    if(phase===5){ statEl.textContent='resolved'; statEl.style.color='#1D9E75'; }
     phase++;
-    if(phase<PHASES.length)timer=setTimeout(tick,PHASES[phase-1].delay);
+    if(phase<PHASES.length) timer=setTimeout(tick, PHASES[phase-1].delay);
   }
 
-  function drawAircraft(x,y,tilt){
-    ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
+  function drawClock() {
+    ctx.save(); ctx.translate(CLK_X,CLK_Y);
+    ctx.fillStyle='#0a0f0a'; ctx.strokeStyle='#1a2e1a'; ctx.lineWidth=1;
+    ctx.fillRect(0,0,138,72); ctx.strokeRect(0,0,138,72);
+    ctx.fillStyle='#3a6a4a'; ctx.font='7px Courier New,monospace';
+    ctx.fillText('CLOCK SYNC',6,12);
+    var labels=['GPS 1','GPS 2','MSF 1','MSF 2'];
+    for(var i=0;i<4;i++){
+      var lx=6+(i*33), ly=24, col;
+      if(!clockSyncDone){
+        if(clockState===0){ col=(Math.floor(clockTick/8)%2===0)?'#E24B4A':'#1a0808'; }
+        else if(clockState===1){ col=(Math.floor((clockTick+i*5)/7)%2===0)?'#1D9E75':'#0a1a0a'; }
+        else { col='#1D9E75'; }
+      } else { col='#1D9E75'; }
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(lx+12,ly,5,0,Math.PI*2); ctx.fill();
+      if(col==='#1D9E75'){ ctx.fillStyle='rgba(29,158,117,0.12)'; ctx.beginPath(); ctx.arc(lx+12,ly,9,0,Math.PI*2); ctx.fill(); }
+      ctx.fillStyle='#3a6a4a'; ctx.font='6px Courier New,monospace'; ctx.fillText(labels[i],lx+2,ly+14);
+    }
+    ctx.font='7px Courier New,monospace';
+    if(clockState===0){ ctx.fillStyle='#E24B4A'; ctx.fillText('SEARCHING...',6,54); }
+    else if(clockState===1){ ctx.fillStyle='#c8a030'; ctx.fillText('ACQUIRING...',6,54); }
+    else { ctx.fillStyle='#1D9E75'; ctx.fillText('LOCKED  GPS + MSF',6,54); }
+    ctx.fillStyle=clockSyncDone?'#1D9E75':'#3a6a4a'; ctx.font='6px Courier New,monospace';
+    ctx.fillText('OCXO: '+(clockSyncDone?'DISCIPLINED':'WARMING'),6,65);
+    ctx.restore();
+  }
+
+  function drawAircraft(x,y,tilt) {
+    ctx.save(); ctx.translate(x,y); ctx.rotate(tilt);
     ctx.fillStyle='#1D9E75';
-    ctx.beginPath();ctx.moveTo(-26,0);ctx.lineTo(16,-7);ctx.lineTo(13,0);ctx.lineTo(16,7);ctx.closePath();ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-26,0); ctx.lineTo(16,-7); ctx.lineTo(13,0); ctx.lineTo(16,7); ctx.closePath(); ctx.fill();
     ctx.fillStyle='#0f6e56';
-    ctx.beginPath();ctx.moveTo(-4,0);ctx.lineTo(-12,-28);ctx.lineTo(-20,-1);ctx.lineTo(-12,10);ctx.closePath();ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-4,0); ctx.lineTo(-12,-28); ctx.lineTo(-20,-1); ctx.lineTo(-12,10); ctx.closePath(); ctx.fill();
     ctx.fillStyle='#0f6e56';
-    ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(16,-18);ctx.lineTo(18,0);ctx.closePath();ctx.fill();
+    ctx.beginPath(); ctx.moveTo(10,0); ctx.lineTo(16,-18); ctx.lineTo(18,0); ctx.closePath(); ctx.fill();
     ctx.fillStyle='#0c5a47';
-    ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(15,-9);ctx.lineTo(17,0);ctx.lineTo(15,9);ctx.closePath();ctx.fill();
+    ctx.beginPath(); ctx.moveTo(11,0); ctx.lineTo(15,-9); ctx.lineTo(17,0); ctx.lineTo(15,9); ctx.closePath(); ctx.fill();
     ctx.fillStyle='rgba(255,80,80,0.75)';
-    ctx.beginPath();ctx.arc(-12,-28,3,0,Math.PI*2);ctx.fill();
+    ctx.beginPath(); ctx.arc(-12,-28,3,0,Math.PI*2); ctx.fill();
     ctx.restore();
   }
 
-  function drawVehicle(x,stopped){
-    ctx.save();ctx.translate(x,EV_Y);
-    ctx.fillStyle='#080e08';ctx.fillRect(-13,12,26,5);
-    ctx.fillStyle='#c03030';ctx.fillRect(-13,-10,26,18);
-    ctx.fillStyle='#a02020';ctx.fillRect(-8,-18,14,9);
-    ctx.fillStyle='#1a3a1a';ctx.fillRect(-6,-17,10,7);
+  function drawVehicle(x,stopped) {
+    ctx.save(); ctx.translate(x,EV_Y);
+    ctx.fillStyle='#080e08'; ctx.fillRect(-13,12,26,5);
+    ctx.fillStyle='#c03030'; ctx.fillRect(-13,-10,26,18);
+    ctx.fillStyle='#a02020'; ctx.fillRect(-8,-18,14,9);
+    ctx.fillStyle='#1a3a1a'; ctx.fillRect(-6,-17,10,7);
     ctx.fillStyle='#0d0d0d';
-    ctx.beginPath();ctx.arc(-7,9,4,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(7,9,4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#1a1a1a';
-    ctx.beginPath();ctx.arc(-7,9,2,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(7,9,2,0,Math.PI*2);ctx.fill();
-    var bc=stopped?'rgba(255,160,0,0.85)':((Math.floor(flash/10)%2===0)?'rgba(255,50,50,0.9)':'rgba(150,20,20,0.3)');
-    ctx.fillStyle=bc;ctx.beginPath();ctx.arc(0,-22,5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath(); ctx.arc(-7,9,4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(7,9,4,0,Math.PI*2); ctx.fill();
+    var bc=stopped?'rgba(255,160,0,0.9)':((Math.floor(flash/10)%2===0)?'rgba(255,50,50,0.9)':'rgba(150,20,20,0.3)');
+    ctx.fillStyle=bc; ctx.beginPath(); ctx.arc(0,-22,5,0,Math.PI*2); ctx.fill();
     ctx.restore();
-    ctx.fillStyle='#903030';ctx.font='9px Courier New,monospace';
+    ctx.fillStyle='#903030'; ctx.font='9px Courier New,monospace';
     ctx.fillText('EMRG',x-10,EV_Y-32);
+    if(stopped){
+      ctx.fillStyle='rgba(226,75,74,0.9)'; ctx.font='bold 14px Courier New,monospace';
+      ctx.fillText('X',x-5,EV_Y+30);
+      ctx.fillStyle='#904040'; ctx.font='8px Courier New,monospace';
+      ctx.fillText('STOPPED',x-20,EV_Y+42);
+    }
   }
 
-  function drawScene(){
-    flash++;
-    ctx.fillStyle='#06100a';ctx.fillRect(0,0,CW,CH);
-    var st=[[40,16],[90,38],[150,10],[220,30],[300,7],[370,44],[440,20],[530,35],[620,12],[700,42],[780,22],[830,36],[55,55],[190,48],[360,28],[510,52],[670,18],[750,30]];
+  function drawScene() {
+    flash++; clockTick++; collisionFlash++;
+    ctx.fillStyle='#06100a'; ctx.fillRect(0,0,CW,CH);
+
+    var st=[[40,16],[90,38],[150,10],[220,30],[300,7],[370,44],[440,20],[530,35],[620,12],[700,42],[780,22],[55,55],[190,48],[360,28],[510,52]];
     ctx.fillStyle='#182818';
     for(var s=0;s<st.length;s++){ctx.fillRect(st[s][0],st[s][1],1,1);}
-    ctx.fillStyle='#081208';ctx.fillRect(0,GND-22,CW,22);
-    ctx.fillStyle='#0a150b';ctx.fillRect(0,GND,CW,CH-GND);
-    ctx.fillStyle='#0c1c0d';ctx.fillRect(0,GND,CW,2);
-    ctx.fillStyle='#09130a';ctx.fillRect(0,GND,THR_X,RWY_H);ctx.fillRect(RWY_END,GND,CW-RWY_END,RWY_H);
-    ctx.fillStyle='#0e1d0f';ctx.fillRect(THR_X,GND,RWY_END-THR_X,RWY_H);
-    ctx.fillStyle='#152615';ctx.fillRect(THR_X,GND,RWY_END-THR_X,2);ctx.fillRect(THR_X,GND+RWY_H-2,RWY_END-THR_X,2);
-    ctx.setLineDash([22,16]);ctx.strokeStyle='#1a3a1a';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(THR_X,GND+RWY_H/2);ctx.lineTo(RWY_END,GND+RWY_H/2);ctx.stroke();ctx.setLineDash([]);
-    for(var t=0;t<4;t++){ctx.fillStyle='#1a3a1a';ctx.fillRect(THR_X+6+t*8,GND+4,5,RWY_H-8);}
-    ctx.fillStyle='#1a3a1a';ctx.font='10px Courier New,monospace';
-    ctx.fillText('27',THR_X+8,GND+RWY_H+16);ctx.fillText('09',RWY_END-32,GND+RWY_H+16);
-    for(var ap=0;ap<4;ap++){ctx.fillStyle=ap<2?'#2a0e0e':'#152615';ctx.beginPath();ctx.arc(THR_X-18-ap*10,GND-2,3,0,Math.PI*2);ctx.fill();}
-    ctx.setLineDash([5,14]);ctx.strokeStyle='#0c1c0c';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(AC_START_X,AC_START_Y);ctx.lineTo(AC_LAND_X,AC_LAND_Y);ctx.stroke();ctx.setLineDash([]);
-    if(!alertFired&&acX<CW*0.85){
-      ctx.setLineDash([4,10]);ctx.strokeStyle='rgba(226,75,74,0.12)';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(acX,acY);ctx.lineTo(AC_LAND_X+20,GND+RWY_H/2);ctx.stroke();ctx.setLineDash([]);
+
+    ctx.fillStyle='#081208'; ctx.fillRect(0,GND-22,CW,22);
+    ctx.fillStyle='#0a150b'; ctx.fillRect(0,GND,CW,CH-GND);
+    ctx.fillStyle='#0c1c0d'; ctx.fillRect(0,GND,CW,2);
+    ctx.fillStyle='#09130a';
+    ctx.fillRect(0,GND,THR_X,RWY_H);
+    ctx.fillRect(RWY_END,GND,CW-RWY_END,RWY_H);
+    ctx.fillStyle='#0e1d0f'; ctx.fillRect(THR_X,GND,RWY_END-THR_X,RWY_H);
+    ctx.fillStyle='#152615';
+    ctx.fillRect(THR_X,GND,RWY_END-THR_X,2);
+    ctx.fillRect(THR_X,GND+RWY_H-2,RWY_END-THR_X,2);
+    ctx.setLineDash([22,16]); ctx.strokeStyle='#1a3a1a'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(THR_X,GND+RWY_H/2); ctx.lineTo(RWY_END,GND+RWY_H/2); ctx.stroke();
+    ctx.setLineDash([]);
+    for(var t=0;t<4;t++){ctx.fillStyle='#1a3a1a'; ctx.fillRect(THR_X+6+t*8,GND+4,5,RWY_H-8);}
+    ctx.fillStyle='#1a3a1a'; ctx.font='10px Courier New,monospace';
+    ctx.fillText('27',THR_X+8,GND+RWY_H+16);
+    ctx.fillText('09',RWY_END-32,GND+RWY_H+16);
+    for(var ap=0;ap<4;ap++){
+      ctx.fillStyle=ap<2?'#2a0e0e':'#152615';
+      ctx.beginPath(); ctx.arc(THR_X-18-ap*10,GND-2,3,0,Math.PI*2); ctx.fill();
     }
-    if(alertFired&&acX>-100){
-      ctx.setLineDash([5,8]);ctx.strokeStyle='rgba(226,75,74,0.55)';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.moveTo(acX,acY);ctx.lineTo(evX,EV_Y);ctx.stroke();ctx.setLineDash([]);
+
+    // Glide slope guide
+    ctx.setLineDash([5,14]); ctx.strokeStyle='#0c1c0c'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(AC_START_X,AC_START_Y); ctx.lineTo(AC_LAND_X,AC_LAND_Y); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Collision vector — aircraft projected to ground run, truck in the way
+    if(!alertFired && clockSyncDone && acX<CW-50){
+      // Show where aircraft would hit on ground run — ahead of current position
+      var pulse=0.12+0.08*Math.sin(collisionFlash*0.18);
+      ctx.setLineDash([4,8]); ctx.strokeStyle='rgba(226,75,74,'+pulse+')'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(acX,acY); ctx.lineTo(AC_LAND_X+80,GND+RWY_H/2); ctx.stroke();
+      ctx.setLineDash([]);
+      // X at collision point — where truck will be
+      if(evX>AC_LAND_X-30){
+        var xp=0.4+0.35*Math.sin(collisionFlash*0.22);
+        ctx.fillStyle='rgba(226,75,74,'+xp+')';
+        ctx.font='bold 16px Courier New,monospace';
+        ctx.fillText('X', evX-6, GND+RWY_H/2+5);
+      }
     }
-    if(!evStopped&&evX<CW+50){evX+=evVx;}
-    if(evX>-40&&evX<CW+50){drawVehicle(evX,evStopped);}
-    var tilt;
+
+    // Alert beam
+    if(alertFired && acX>-100){
+      ctx.setLineDash([5,8]); ctx.strokeStyle='rgba(226,75,74,0.5)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(acX,acY); ctx.lineTo(evX,EV_Y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Truck
+    if(!evStopped && evX<RWY_END){evX+=evVx;}
+    if(evX>-40 && evX<CW+40){ drawVehicle(evX,evStopped); }
+
+    // Aircraft
     if(!goAround){
-      acX+=acVx;acY+=acVy;
-      tilt=Math.atan2(acVy,-acVx)*-1;
+      acX+=acVx; acY+=acVy;
+      currentTilt=Math.atan2(acVy,-acVx)*-1;
     } else {
-      if(acVy>-0.18){acVy-=0.018;}
-      acVx=acVx*0.9985;acX+=acVx;acY+=acVy;
-      tilt=Math.atan2(acVy,-acVx);
+      // Power on: pitch rate builds gradually (more realistic feel)
+      if(pitchUpRate<0.025){ pitchUpRate+=0.00015; }
+      if(acVy>-0.25){ acVy-=pitchUpRate; }
+      // Speed maintained — ground speed barely drops as power comes on
+      acVx=acVx*0.9992;
+      acX+=acVx; acY+=acVy;
+      var targetTilt=Math.atan2(acVy,-acVx);
+      currentTilt=currentTilt+(targetTilt-currentTilt)*0.06;
     }
-    if(tilt>0.21)tilt=0.21;if(tilt<-0.32)tilt=-0.32;
+    if(currentTilt>0.24) currentTilt=0.24;
+    if(currentTilt<-0.32) currentTilt=-0.32;
+
     if(acX>-100&&acY>-100){
-      drawAircraft(acX,acY,tilt);
-      ctx.fillStyle='#1D9E75';ctx.font='10px Courier New,monospace';
+      drawAircraft(acX,acY,currentTilt);
+      ctx.fillStyle='#1D9E75'; ctx.font='10px Courier New,monospace';
       ctx.fillText('AC',acX+8,acY-34);
     }
-    ctx.fillStyle='#162816';ctx.font='9px Courier New,monospace';
-    ctx.fillText('32DL  runway incursion  tower view',10,18);
+
+    // Exclamations
+    if(alertFired&&alertAlpha>0){
+      ctx.save(); ctx.globalAlpha=alertAlpha;
+      ctx.fillStyle='#E24B4A'; ctx.font='bold 22px Courier New,monospace';
+      ctx.fillText('!',acX+20,acY-46);
+      ctx.fillText('!',evX+14,EV_Y-46);
+      ctx.restore();
+      alertAlpha=Math.max(0,alertAlpha-0.004);
+    }
+
+    // Phase label
+    ctx.fillStyle='#1a3020'; ctx.font='8px Courier New,monospace';
+    var lbl='';
+    if(!clockSyncDone){ lbl='CLOCK SYNCHRONISING'; }
+    else if(!alertFired&&phase<=2){ lbl='AIRCRAFT ON APPROACH  —  COLLISION VECTOR PROJECTED'; }
+    else if(alertFired&&phase<=4){ lbl='32DL ALERT  —  VEHICLE STOPPED  —  GO-AROUND POWER ON'; }
+    else if(phase>=5){ lbl='CLIMBING OVER STATIONARY VEHICLE  —  RUNWAY CLEAR'; }
+    ctx.fillText(lbl,10,18);
+
+    drawClock();
     raf=requestAnimationFrame(drawScene);
   }
 
   btn.addEventListener('click',reset);
   reset();
 })();
+
+})();
 </script>
 <!-- END RUNWAY INCURSION DEMO -->
+
 
 
 </body>
