@@ -122,10 +122,24 @@ Safety margin at 500ms timeout:  86,000&times;</div>
         <p>After a full 8-hour emergency vehicle shift, the relative timing error between two independently prepared clocks is 86,000 times smaller than a 500ms coordination window. The architecture is validated.</p>
 
         <h4 style="color:var(--paper);margin:1.5rem 0 0.8rem;">Clock tiers</h4>
-        <p><strong style="color:var(--paper);">Tier 1 &mdash; GPS (dual):</strong> Both receivers hot simultaneously. Single failure is transparent.<br>
-        <strong style="color:var(--paper);">Tier 2 &mdash; MSF/DCF77 (dual, warm backup):</strong> Running continuously alongside GPS. Instant handover if GPS fails. Both trace to NPL/PTB caesium independently of GPS.<br>
-        <strong style="color:var(--paper);">Tier 3 &mdash; OCXO disciplined holdover:</strong> Trained pre-mission, runs solo for full mission duration within tolerance.<br>
-        <strong style="color:var(--paper);">Tier 4 &mdash; Peer negotiation:</strong> Genuine last resort only. Not expected in normal operations.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+          <tr style="border-bottom:1px solid #1a1a1a;">
+            <td style="padding:0.5rem 1rem 0.5rem 0;color:var(--paper);font-weight:600;white-space:nowrap;vertical-align:top;">Tier 1 &mdash; GPS (dual)</td>
+            <td style="padding:0.5rem 0;color:var(--dim);">Both receivers hot simultaneously. Single failure is transparent.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1a1a1a;">
+            <td style="padding:0.5rem 1rem 0.5rem 0;color:var(--paper);font-weight:600;white-space:nowrap;vertical-align:top;">Tier 2 &mdash; MSF/DCF77 (dual)</td>
+            <td style="padding:0.5rem 0;color:var(--dim);">Running continuously alongside GPS. Instant handover if GPS fails. Both trace to NPL/PTB caesium independently of GPS.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #1a1a1a;">
+            <td style="padding:0.5rem 1rem 0.5rem 0;color:var(--paper);font-weight:600;white-space:nowrap;vertical-align:top;">Tier 3 &mdash; OCXO holdover</td>
+            <td style="padding:0.5rem 0;color:var(--dim);">Trained pre-mission, runs solo for full mission duration within tolerance.</td>
+          </tr>
+          <tr>
+            <td style="padding:0.5rem 1rem 0.5rem 0;color:var(--paper);font-weight:600;white-space:nowrap;vertical-align:top;">Tier 4 &mdash; Peer negotiation</td>
+            <td style="padding:0.5rem 0;color:var(--dim);">Genuine last resort only. Not expected in normal operations.</td>
+          </tr>
+        </table>
 
         <h4 style="color:var(--paper);margin:1.5rem 0 0.8rem;">Wire format v2.1</h4>
         <p>An optional 2-byte ClockInfo field appended to the 32DL v2.0 frame. Backward compatible &mdash; old parsers ignore it. Encodes clock source (GPS/MSF/holdover/peer), quality (dual/single/holdover), OCXO discipline age, pre-launch certificate status, and individual receiver health.</p>
