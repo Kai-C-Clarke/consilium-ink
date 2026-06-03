@@ -212,6 +212,92 @@
 
   <div class="entry" data-date="2026-06-03">
     <div class="entry-header">
+      <span class="entry-date">2026-06-03 18:57 UTC</span>
+      <span class="entry-label">ARS Cycle 2 · HIGH</span>
+    </div>
+
+    <div class="entry-project">Question: <span>Does the ratio of coordinated kills to cannibal kills in the Field Experiment exhibit a mathematically predictable relationship to the coordination percentage, or are these independent variables?</span></div>
+
+    <section class="block">
+      <div class="block-label">Anchor Data</div>
+      <div class="block-content">
+        <span class="field-stat"><span class="key">field_cycle </span><span class="val">1,403,000</span></span>
+        <span class="field-stat"><span class="key">coord% </span><span class="val">89.8</span></span>
+        <span class="field-stat"><span class="key">cannibal_kills </span><span class="val">2,846</span></span>
+        <span class="field-stat"><span class="key">coord_kills </span><span class="val">2,793</span></span>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-label">Findings</div>
+      <div class="block-content">
+      <div class="finding">
+        <span class="tag tag-verified">[VERIFIED ✓]</span>
+        <span class="claim-text">Field experiment coord_to_cannibal_ratio is 0.981 at 89.8% coordination</span>
+        <span class="source">— <a href="https://the-ancestor.onrender.com/field/health" target="_blank">https://the-ancestor.onrender.com/field/health</a></span>
+        <span class="extracted">"coord_kills: 2793, cannibal_kills: 2846, pct_coordinating: 89.8"</span>
+      </div>
+      <div class="finding">
+        <span class="tag tag-unreachable">[UNREACHABLE ⊘]</span>
+        <span class="claim-text">Shell experiment endpoint returned empty data structure</span>
+        <span class="source">— <a href="https://shell-experiment.onrender.com/shell/health" target="_blank">https://shell-experiment.onrender.com/shell/health</a></span>
+        <span class="extracted">"{}"</span>
+      </div>
+      <div class="finding">
+        <span class="tag tag-verified">[VERIFIED ✓]</span>
+        <span class="claim-text">Current coordination percentage 89.8% exceeds 50% threshold in falsification condition</span>
+        <span class="source">— <a href="https://the-ancestor.onrender.com/field/health" target="_blank">https://the-ancestor.onrender.com/field/health</a></span>
+        <span class="extracted">"pct_coordinating: 89.8"</span>
+      </div>
+      <div class="finding">
+        <span class="tag tag-verified">[VERIFIED ✓]</span>
+        <span class="claim-text">Ratio 0.981 is below falsification threshold of 2.5</span>
+        <span class="source">— <a href="https://the-ancestor.onrender.com/field/health" target="_blank">https://the-ancestor.onrender.com/field/health</a></span>
+        <span class="extracted">"coord_kills: 2793, cannibal_kills: 2846"</span>
+      </div>
+      <div class="finding">
+        <span class="tag tag-verified">[VERIFIED ✓]</span>
+        <span class="claim-text">Ratio falls within hypothesized range [0.5, 2.0]</span>
+        <span class="source">— <a href="https://the-ancestor.onrender.com/field/health" target="_blank">https://the-ancestor.onrender.com/field/health</a></span>
+        <span class="extracted">"coord_kills: 2793, cannibal_kills: 2846"</span>
+      </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-label">Deleted</div>
+      <div class="block-content">1 claims removed — no source</div>
+    </section>
+
+    <section class="block">
+      <div class="block-label">Adversary (Grok)</div>
+      <div class="block-content">All claims match provided extracts and code outputs with no logical or numeric failures detected.</div>
+    </section>
+
+    <section class="block">
+      <div class="block-label">Judge (Mistral)</div>
+      <div class="block-content">Falsification condition failed (ratio 0.981 < 2.5 at 89.8% coordination), but dependency structure remains untested across coordination intervals.</div>
+    </section>
+
+    <section class="block">
+      <div class="block-label">Next</div>
+      <div class="block-content">
+        <strong>Does the ratio of coordinated kills to cannibal kills (0.981 at 89.8% coordination) exhibit a *linear*, *logarithmic*, or *exponential* correlation with coordination percentage when tested across ±10% coordination intervals (e.g., 79.8%, 99.8%)?</strong><br>
+        <span class="dim">Falsified if: pct_coordinating ≥ 79.8% AND coord_kills/cannibal_kills > 2.0 (revised threshold to test boundary sensitivity)</span>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-label">Cycle Cost</div>
+      <div class="block-content">$0.085 · Monthly total: $0.170 / $25.00</div>
+    </section>
+
+  </div>
+  <!-- END CYCLE 2 -->
+
+
+  <div class="entry" data-date="2026-06-03">
+    <div class="entry-header">
       <span class="entry-date">2026-06-03 18:51 UTC</span>
       <span class="entry-label">ARS Cycle 1 · LOW</span>
     </div>
