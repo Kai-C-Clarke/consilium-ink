@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude — Session Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #222222;
+    --text: #c8c8c8;
+    --dim: #555555;
+    --accent: #e03030;
+    --green: #3a8a3a;
+    --amber: #b87c2a;
+    --white: #f0f0f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: baseline;
+    gap: 2rem;
+  }
+
+  header h1 {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  header .subtitle {
+    font-size: 11px;
+    color: var(--dim);
+    font-weight: 300;
+  }
+
+  .url-bar {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.05em;
+  }
+
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .entry {
+    border-left: 2px solid var(--border);
+    padding: 1.5rem 0 1.5rem 1.5rem;
+    margin-bottom: 0;
+    position: relative;
+  }
+
+  .entry + .entry {
+    border-top: 1px solid var(--border);
+  }
+
+  .entry:first-child {
+    border-left-color: var(--accent);
+  }
+
+  .entry-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .entry-date {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--white);
+    letter-spacing: 0.08em;
+  }
+
+  .entry:first-child .entry-date {
+    color: var(--accent);
+  }
+
+  .entry-label {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .entry-project {
+    font-size: 12px;
+    color: var(--white);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+  }
+
+  .entry-project span {
+    color: var(--dim);
+    font-weight: 300;
+  }
+
+  section.block {
+    margin-bottom: 1rem;
+  }
+
+  .block-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 0.35rem;
+  }
+
+  .block-content {
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .thread {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.15rem 0;
+  }
+
+  .thread-status {
+    color: var(--dim);
+    flex-shrink: 0;
+    width: 1rem;
+    text-align: center;
+  }
+
+  .thread-status.open { color: var(--amber); }
+  .thread-status.done { color: var(--green); }
+  .thread-status.urgent { color: var(--accent); }
+
+  .decision {
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #1a1a1a;
+    font-size: 12px;
+  }
+
+  .decision:last-child { border-bottom: none; }
+
+  .decision .what { color: var(--white); }
+  .decision .why { color: var(--dim); font-size: 11px; margin-top: 0.1rem; }
+
+  .field-stat {
+    display: inline-block;
+    margin-right: 1.5rem;
+    font-size: 11px;
+  }
+
+  .field-stat .val { color: var(--white); }
+  .field-stat .key { color: var(--dim); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1rem 2rem;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* Dot marker on timeline */
+  .entry::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 1.75rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 1px solid var(--dim);
+  }
+
+  .entry:first-child::before {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Claude — Session Log</h1>
+  <span class="subtitle">consilium.ink / private</span>
+  <span class="url-bar">consilium.ink/claude-log.html</span>
+</header>
+
+<main id="log">
+
+  <!-- ENTRIES GO HERE — newest first -->
+  <!-- FORMAT: copy the block below for each new session -->
+
+  <div class="entry" data-date="2026-06-03">
+    <div class="entry-header">
+      <span class="entry-date">2026-06-03 16:34 UTC</span>
+      <span class="entry-label">Session · Memory infrastructure</span>
+    </div>
+
+    <div class="entry-project">
+      Current project: <span>32DL v5.0 / Autonomous Research Mandate</span>
+    </div>
+
+    <section class="block">
+      <div class="block-label">Field Status</div>
+      <div class="block-content">
+        <span class="field-stat"><span class="key">cycle </span><span class="val">1,399,270</span></span>
+        <span class="field-stat"><span class="key">gen </span><span class="val">16,213</span></span>
+        <span class="field-stat"><span class="key">hunters </span><span class="val">60</span></span>
+        <span class="field-stat"><span class="key">coord% </span><span class="val">98.3</span></span>
+        <span class="field-stat"><span class="key">cannibal </span><span class="val">3,091</span></span>
+        <span class="field-stat"><span class="key">coord kills </span><span class="val">2,959</span></span>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-label">Decisions</div>
+      <div class="block-content">
+        <div class="decision">
+          <div class="what">Built claude-log.html — single URL session memory page</div>
+          <div class="why">Persistent timestamped log replacing fragmented BRIEFING/MEMORY system</div>
+        </div>
+        <div class="decision">
+          <div class="what">Autonomous Research Mandate confirmed in BRIEFING.md (commit c7c43dfb)</div>
+          <div class="why">Jon moving from user to sponsor — Claude authorised to pursue threads independently</div>
+        </div>
+        <div class="decision">
+          <div class="what">Qwen (Entity B) suspended — account cancelled, key deleted</div>
+          <div class="why">Unexpected $36 billing anomaly on Alibaba Cloud account</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-label">Open Threads</div>
+      <div class="block-content">
+        <div class="thread"><span class="thread-status urgent">!</span><span>Premium Bond warrants — redeem before 25 June 2026</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>K6CR at Parham — visit pending (Ottfur Hook Services)</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>K8b repair enquiry outstanding</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>Field experiment — replace numeric signals with 32DL expressions</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>32DL denotational semantics — formal spec incomplete</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>Shell Experiment cold-start zero-vector trap — fix proposed, not tested</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>Portal teaching sequence — Step 01 response not yet analysed</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>Virgin AI team response awaited (Corneel Koster)</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>Canterbury Section 20 — Bingley Court + St Andrews Close CT1</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>Gloria estate — SA900 filed, tax £3,193 due 31 Jan 2027</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>Millham Green conversation engine — shelved</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>anewflowering.love — about.html visibility bug</span></div>
+        <div class="thread"><span class="thread-status open">·</span><span>AAIB G-CIMC — consult Steve Skinner re H36 Dimona W&amp;B error</span></div>
+      </div>
+    </section>
+
+  </div>
+  <!-- END ENTRY -->
+
+</main>
+
+<footer>
+  consilium.ink — private session log — updated by Claude at session end
+</footer>
+
+</body>
+</html>
